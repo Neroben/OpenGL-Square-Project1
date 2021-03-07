@@ -59,8 +59,6 @@ private:
 
     // Сборщик шейдерных подпрограмм
     QOpenGLShaderProgram *shaderProgram;
-
-    QOpenGLFunctions *f;
 };
 
 

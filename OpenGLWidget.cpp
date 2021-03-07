@@ -6,11 +6,10 @@
 #include "OpenGLWidget.h"
 
 void OpenGLWidget::initializeGL() {
-    f = QOpenGLContext::currentContext()->functions();
-    f->glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     // Фоновый цвет
-    f->glClearColor(0.0f, 0.5f, 0.0f, 0.0f);
+    glClearColor(0.0f, 0.5f, 0.0f, 0.0f);
 
     // Инициализация шейдеров
     // Вершинный шейдер
@@ -44,7 +43,7 @@ void OpenGLWidget::initializeGL() {
 void OpenGLWidget::resizeGL(int nWidth, int nHeight)
 {
     // Задание области вывода
-    f->glViewport(0, 0, nWidth, nHeight);
+    glViewport(0, 0, nWidth, nHeight);
     // Задаём матрицу центрального проектирования
     resetProjection();
 }
@@ -52,7 +51,7 @@ void OpenGLWidget::resizeGL(int nWidth, int nHeight)
 // Внутри данной подпрограммы происходит рисование объектов
 void OpenGLWidget::paintGL()
 {
-    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Массив координат (x, y) четырёх вершин квадрата.
     // Координату z зададим в коде вершинного шейдера (z = 0)
@@ -76,7 +75,7 @@ void OpenGLWidget::paintGL()
 
     // Рисование примитива по координатам, заданным в массиве
     // Третий параметр означает, что массив vertices содержит координаты 4 вершин
-    f->glDrawArrays(GL_QUADS, 0, 4);
+    glDrawArrays(GL_QUADS, 0, 4);
 
     shaderProgram->disableAttributeArray("vertex");
 
