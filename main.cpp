@@ -1,15 +1,14 @@
 
-#include "SquareWindow.h"
+#include <QApplication>
+#include "OpenGLWidget.h"
 
 int main(int argc, char **argv)
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
-    SquareWindow window;
-    window.resize(640, 480);
-    window.show();
 
-    window.setAnimating(true);
+    OpenGLWidget w(nullptr);
+    w.show();
 
-    return QGuiApplication::exec();
+    return app.exec();
 }

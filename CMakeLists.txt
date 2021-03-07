@@ -6,13 +6,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(QT_QMAKE_EXECUTABLE ON)
-
 set(QT_VERSION 6)
-set(REQUIRED_LIBS Core Gui Widgets OpenGl)
-set(REQUIRED_LIBS_QUALIFIED Qt6::Core Qt6::Gui Qt6::Widgets Qt6::OpenGL)
+set(REQUIRED_LIBS Core Gui Widgets OpenGLWidgets)
+set(REQUIRED_LIBS_QUALIFIED Qt6::Core Qt6::Gui Qt6::Widgets Qt6::OpenGLWidgets)
 cmake_minimum_required(VERSION 3.9)
 
-add_executable(${PROJECT_NAME} main.cpp OpenGLWindow.cpp OpenGLWindow.h SquareWindow.cpp SquareWindow.h)
+add_executable(${PROJECT_NAME} main.cpp OpenGLWidget.cpp OpenGLWidget.h)
 
 if (NOT CMAKE_PREFIX_PATH)
     message(WARNING "CMAKE_PREFIX_PATH is not defined, you may need to set it "

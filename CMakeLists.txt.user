@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.14.0, 2021-02-22T20:03:41. -->
+<!-- Written by QtCreator 4.14.1, 2021-03-06T20:29:21. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -88,8 +88,8 @@
   <variable>ProjectExplorer.Project.Target.0</variable>
   <valuemap type="QVariantMap">
    <value type="QString" key="DeviceType">Desktop</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop Qt 6.0.1 MinGW 64-bit</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop Qt 6.0.1 MinGW 64-bit</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Замена для «Desktop Qt 6.0.1 MinGW 64-bit»</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Замена для «Desktop Qt 6.0.1 MinGW 64-bit»</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">qt.qt6.601.win64_mingw81_kit</value>
    <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">1</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
