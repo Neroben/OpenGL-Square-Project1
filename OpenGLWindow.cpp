@@ -1,24 +1,23 @@
-//
-// Created by sdont on 05.03.2021.
-//
+// Автор: Осипов Олег Васильевич
+// Автор: Донцов Александр Алексеевич
+// Copyright © 2020 БГТУ им. В.Г. Шухова. Кафедра программного обеспечения вычислительной техники и автоматизированных систем.
+// Дата изменения: 14.03.2020
 
 #include "OpenGLWindow.h"
 #include <QOpenGLPaintDevice>
 #include <QPainter>
 
-//! [1]
 OpenGLWindow::OpenGLWindow(QWindow *parent)
         : QWindow(parent)
 {
     setSurfaceType(QWindow::OpenGLSurface);
 }
-//! [1]
 
 OpenGLWindow::~OpenGLWindow()
 {
     delete m_device;
 }
-//! [2]
+
 void OpenGLWindow::render(QPainter *painter)
 {
     Q_UNUSED(painter);

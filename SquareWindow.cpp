@@ -1,6 +1,7 @@
-//
-// Created by sdont on 05.03.2021.
-//
+// Автор: Осипов Олег Васильевич
+// Автор: Донцов Александр Алексеевич
+// Copyright © 2020 БГТУ им. В.Г. Шухова. Кафедра программного обеспечения вычислительной техники и автоматизированных систем.
+// Дата изменения: 14.03.2020
 
 #include "SquareWindow.h"
 
@@ -46,7 +47,7 @@ void SquareWindow::render()
     QMatrix4x4 matrix;
     matrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
     matrix.translate(0, 0, -2);
-    matrix.rotate(100.0f * m_frame / screen()->refreshRate(), 0, 0, 1);
+    matrix.rotate(100.0f * m_frame / screen()->refreshRate(), 0, 1, 0);
 
     m_program->setUniformValue(m_matrixUniform, matrix);
 
