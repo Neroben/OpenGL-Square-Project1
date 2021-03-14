@@ -108,7 +108,7 @@ void OpenGLWidget::resetProjection()
     projectMatrix.setToIdentity();
 
     // Умножение на матрицу перспективного проектирования
-    projectMatrix.perspective(30.0, (float)width() / height(), 0.1, 20);
+    projectMatrix.perspective(30.0, (float)width() / (float)height(), 0.1, 20);
 }
 
 
@@ -140,7 +140,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* m_event)
 //    // Вычислим, на сколько переместился курсор мыши между двумя событиями mouseMoveEvent
     QPoint dp = m_event->pos() - mousePosition;
 //    // Изменим матрицу поворота в соответствии с тем, как пользователь переместил курсор мыши
-    changeRotateMatrix(rotateMatrix, dp.x(), dp.y());
+    changeRotateMatrix(rotateMatrix, (float) dp.x(), (float) dp.y());
 //    // Сохраним текущую позицию мыши
     mousePosition = m_event->pos();
 //    // Обновим матрицу аффинных преобразований
@@ -162,7 +162,7 @@ void OpenGLWidget::changeRotateMatrix(QMatrix4x4& R, float dx, float dy)
 void OpenGLWidget::wheelEvent(QWheelEvent* w_event)
 {
     // При прокрутке колеса мыши изменяем глубину объекта
-    zoffset -= (w_event->angleDelta().x() + w_event->angleDelta().y()) / 500.0;
+    zoffset -= (float)(w_event->angleDelta().x() + w_event->angleDelta().y()) / 500.0f;
     resetModelView(); // Обновим матрицу аффинных преобразований
     update(); // Перерисовать окно
 }
