@@ -24,10 +24,13 @@ private:
     void initializeGL() override;
     void resizeGL(int nWidth, int nHeight) override;
     void paintGL() override;
-    void mouseMoveEvent(QMouseEvent* m_event);
-    void wheelEvent(QWheelEvent* w_event);
-    void keyPressEvent(QKeyEvent* key_event);
-    void mousePressEvent(QMouseEvent* m_event);
+    void mouseMoveEvent(QMouseEvent* m_event) override;
+    void wheelEvent(QWheelEvent* w_event) override;
+    void keyPressEvent(QKeyEvent* key_event) override;
+    void mousePressEvent(QMouseEvent* m_event) override;
+
+    // Подпрограмма для рисования куба
+    void glCube();
 
     // Процедура для изменения матрицы проектирования
     void resetProjection();
@@ -40,6 +43,9 @@ private:
 
     // Процедура выводит на экран текст (подсказку)
     void textOut();
+
+    // Инициализация шейдеров
+    void initShader();
 
 private:
     // Глубина объекта
@@ -59,6 +65,10 @@ private:
 
     // Сборщик шейдерных подпрограмм
     QOpenGLShaderProgram *shaderProgram;
+
+    int vertexLocation;
+    int matrixLocation;
+    int colorLocation;
 };
 
 

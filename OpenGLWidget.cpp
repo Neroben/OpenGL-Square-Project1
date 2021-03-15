@@ -13,33 +13,36 @@ void OpenGLWidget::initializeGL() {
     // Фоновый цвет
     glClearColor(0.0f, 0.5f, 0.0f, 0.0f);
 
-    // Инициализация шейдеров
-    // Вершинный шейдер
-    // Шейдер принимает на вход вектор из двух координат (x, y)
-    // При расчёте выходного вектора зададим координаты z = 0, w = 1
-    shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex,
-                                          "attribute vec2 vertex;\n"
-                                          "uniform mat4 matrix;\n"
-                                          "void main(void)\n"
-                                          "{\n"
-                                          "   gl_Position = matrix * vec4(vertex.xy, 0.0, 1.0);\n"
-                                          "}");
-
-    // Фрагментный шейдер задаёт только цвет
-    shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment,
-                                           "uniform mediump vec4 color;\n"
-                                           "void main(void)\n"
-                                           "{\n"
-                                           "   gl_FragColor = color;\n"
-                                           "}");
+    // Режим рисования только лицевых граней
+    glEnable(GL_CULL_FACE);
 
     // Сборка шейдеров
     if(!shaderProgram->link())
         qDebug() << shaderProgram->log();
 
-    // Переместим квадрат вглубь экрана, чтобы он был виден
-    zoffset -= 0.5;
     resetModelView();
+    initShader();
+}
+
+void OpenGLWidget::initShader()
+{
+    // Текст вершинного шейдера
+    shaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, ":resources/vertexShader.vsh");
+
+    // Текст фрагментного шейдера
+    shaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, ":resources/fragmentShader.fsh");
+
+    if (!shaderProgram->link())
+        qDebug() << shaderProgram->log();
+
+    // Создание идентификатора массива вершин
+    vertexLocation = shaderProgram->attributeLocation("vertex");
+
+    // Создание идентификатора массива вершин
+    matrixLocation = shaderProgram->uniformLocation("matrix");
+
+    // Идентификатор массива цветов
+    colorLocation =  shaderProgram->uniformLocation("color");
 }
 
 void OpenGLWidget::resizeGL(int nWidth, int nHeight)
@@ -55,33 +58,8 @@ void OpenGLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Массив координат (x, y) четырёх вершин квадрата.
-    // Координату z зададим в коде вершинного шейдера (z = 0)
-    static const float vertices[4*2] = { -1.0f,  1.0f,   // Первая вершина квадрата
-                                         -1.0f, -1.0f,   // Вторая вершина квадрата
-                                         1.0f, -1.0f,   // Третья вершина квадрата
-                                         1.0f,  1.0f }; // Четвёртая вершина квадрата
-
-    shaderProgram->bind();
-
-    // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
-    shaderProgram->setUniformValue("matrix", projectMatrix * modelViewMatrix);
-
-    // Зададим цвет квадрата
-    shaderProgram->setUniformValue("color", QColor(255, 128, 40));
-
-    // Передадим шейдеру весь массив вершин
-    // Третий параметр равен двум, потому что одна вершина квадрата задана в массиве vertices двумя числами
-    shaderProgram->setAttributeArray("vertex", vertices, 2);
-    shaderProgram->enableAttributeArray("vertex");
-
-    // Рисование примитива по координатам, заданным в массиве
-    // Третий параметр означает, что массив vertices содержит координаты 4 вершин
-    glDrawArrays(GL_QUADS, 0, 4);
-
-    shaderProgram->disableAttributeArray("vertex");
-
-    shaderProgram->release();
+    //рисование куба
+    glCube();
 
     textOut();
 }
@@ -99,6 +77,46 @@ void OpenGLWidget::textOut()
     painter.drawText(10, 50, "Зажатая кнопка мыши - повернуть сцену");
     painter.drawText(10, 65, "Esc - выход");
     painter.end();
+}
+
+// Подпрограмма для рисования куба в начале координат
+void OpenGLWidget::glCube()
+{
+    // Массив из 8 вершин куба
+    static const float vertices[8][3] =
+            {{ 1.0f,  1.0f,  1.0f}, // Координаты первой вершины
+             { 1.0f,  1.0f, -1.0f}, // Координаты второй вершины
+             { 1.0f, -1.0f,  1.0f},
+             { 1.0f, -1.0f, -1.0f},
+             {-1.0f,  1.0f,  1.0f},
+             {-1.0f,  1.0f, -1.0f},
+             {-1.0f, -1.0f,  1.0f},
+             {-1.0f, -1.0f, -1.0f}}; // Координаты восьмой вершины
+
+    // Массив индексов вершин vertices
+    static const GLushort indeces[] =
+            { 4, 5, 7, 6,   // Индексы вершин первой грани
+              2, 3, 1, 0,   // Индексы вершин второй грани
+              0, 1, 5, 4,   // ...
+              6, 7, 3, 2,
+              4, 6, 2, 0,
+              1, 3, 7, 5 }; // Индексы вершин шестой грани
+
+    shaderProgram->bind();
+
+    shaderProgram->setUniformValue(matrixLocation, projectMatrix*modelViewMatrix);
+
+    shaderProgram->setUniformValue(colorLocation, QColor(255, 200, 14));
+
+    shaderProgram->setAttributeArray(vertexLocation, (float*)vertices, 3);
+
+    shaderProgram->enableAttributeArray(vertexLocation);
+
+    glDrawElements(GL_QUADS, 6*4, GL_UNSIGNED_SHORT, indeces);
+
+    shaderProgram->disableAttributeArray(vertexLocation);
+
+    shaderProgram->release();
 }
 
 
