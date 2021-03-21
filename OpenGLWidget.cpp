@@ -80,21 +80,18 @@ void OpenGLWidget::paintGL()
 
     // Передадим шейдеру весь массив вершин
     // Третий параметр равен двум, потому что одна вершина квадрата задана в массиве vertices двумя числами
-//    shaderProgram->setAttributeArray("vertex", vertices, 2);
-
     shaderProgram->setAttributeArray(0, vertices, 2, 2 * sizeof(float));
     shaderProgram->enableAttributeArray(0);
 
+    // Зададим цвет квадрата
     shaderProgram->setAttributeArray(1, color, 4, 4*sizeof(float));
     shaderProgram->enableAttributeArray(1);
-    // Зададим цвет квадрата
-//    shaderProgram->setUniformValue("color", color);
-//    glVertexPointer(2, GL_FLOAT, 2 * sizeof(float), color);
 
     // Рисование примитива по координатам, заданным в массиве
     // Третий параметр означает, что массив vertices содержит координаты 4 вершин
     glDrawArrays(GL_QUADS, 0, 4);
 
+    //отключаем массив вершин
     shaderProgram->disableAttributeArray(0);
     shaderProgram->disableAttributeArray(1);
 
