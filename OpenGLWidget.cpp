@@ -18,19 +18,23 @@ void OpenGLWidget::initializeGL() {
     // Шейдер принимает на вход вектор из двух координат (x, y)
     // При расчёте выходного вектора зададим координаты z = 0, w = 1
     shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex,
-                                          "attribute vec2 vertex;\n"
+                                           "#version 330 core\n"
+                                          "layout (location = 0) in vec2 vertex;\n"
+                                          "layout (location = 1) in vec4 aColor;\n"
+                                          "out vec4 ourColor;\n"
                                           "uniform mat4 matrix;\n"
                                           "void main(void)\n"
                                           "{\n"
                                           "   gl_Position = matrix * vec4(vertex.xy, 0.0, 1.0);\n"
+                                          "   ourColor = aColor;\n"
                                           "}");
 
     // Фрагментный шейдер задаёт только цвет
     shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment,
-                                           "uniform mediump vec4 color;\n"
+                                           "in vec4 ourColor;\n"
                                            "void main(void)\n"
                                            "{\n"
-                                           "   gl_FragColor = color;\n"
+                                           "   gl_FragColor = ourColor;\n"
                                            "}");
 
     // Сборка шейдеров
@@ -62,24 +66,37 @@ void OpenGLWidget::paintGL()
                                          1.0f, -1.0f,   // Третья вершина квадрата
                                          1.0f,  1.0f }; // Четвёртая вершина квадрата
 
+    static const float color[4*4] = {
+            1.0f, 0.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 1.0f,
+            0.0f, 1.0f, 1.0f, 1.0f
+    };
+
     shaderProgram->bind();
 
     // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
     shaderProgram->setUniformValue("matrix", projectMatrix * modelViewMatrix);
 
-    // Зададим цвет квадрата
-    shaderProgram->setUniformValue("color", QColor(255, 128, 40));
-
     // Передадим шейдеру весь массив вершин
     // Третий параметр равен двум, потому что одна вершина квадрата задана в массиве vertices двумя числами
-    shaderProgram->setAttributeArray("vertex", vertices, 2);
-    shaderProgram->enableAttributeArray("vertex");
+//    shaderProgram->setAttributeArray("vertex", vertices, 2);
+
+    shaderProgram->setAttributeArray(0, vertices, 2, 2 * sizeof(float));
+    shaderProgram->enableAttributeArray(0);
+
+    shaderProgram->setAttributeArray(1, color, 4, 4*sizeof(float));
+    shaderProgram->enableAttributeArray(1);
+    // Зададим цвет квадрата
+//    shaderProgram->setUniformValue("color", color);
+//    glVertexPointer(2, GL_FLOAT, 2 * sizeof(float), color);
 
     // Рисование примитива по координатам, заданным в массиве
     // Третий параметр означает, что массив vertices содержит координаты 4 вершин
     glDrawArrays(GL_QUADS, 0, 4);
 
-    shaderProgram->disableAttributeArray("vertex");
+    shaderProgram->disableAttributeArray(0);
+    shaderProgram->disableAttributeArray(1);
 
     shaderProgram->release();
 
