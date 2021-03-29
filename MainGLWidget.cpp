@@ -60,6 +60,15 @@ void MainGLWidget::initializeGL() {
     resetModelView();
 }
 
+void MainGLWidget::swapColors(void)
+{
+    QVector4D T = color[0];
+    color[0] = color[1];
+    color[1] = color[2];
+    color[2] = color[3];
+    color[3] = T;
+}
+
 void MainGLWidget::resizeGL(int nWidth, int nHeight) {
 
     // Задание области вывода
@@ -105,12 +114,13 @@ void MainGLWidget::paintGL() {
 
     shaderProgram.release();
 
+    swapColors();
+
     textOut();
 }
 
 
 void MainGLWidget::textOut() {
-
     // Вывод на экран текста
     QPainter painter(this);
     painter.setPen(Qt::yellow);
@@ -125,7 +135,6 @@ void MainGLWidget::textOut() {
 
 
 void MainGLWidget::resetProjection() {
-
     // Инициализация единичной матрицы
     projectMatrix.setToIdentity();
 
@@ -180,7 +189,6 @@ void MainGLWidget::changeRotateMatrix(QMatrix4x4 &R, float dx, float dy) {
 
 // Обработчик события прокрутки колеса мыши
 void MainGLWidget::wheelEvent(QWheelEvent *w_event) {
-
     // При прокрутке колеса мыши изменяем глубину объекта
     zoffset -= (float) (w_event->angleDelta().x() + w_event->angleDelta().y()) / 500.0f;
     resetModelView(); // Обновим матрицу аффинных преобразований
@@ -194,7 +202,7 @@ void MainGLWidget::mousePressEvent(QMouseEvent *m_event) {
 
 
 void MainGLWidget::keyPressEvent(QKeyEvent *event) {
-//     Закрыть окно при нажатии клавиши Escape
+    // Закрыть окно при нажатии клавиши Escape
     if (event->key() == Qt::Key_Escape) {
         close();
     }

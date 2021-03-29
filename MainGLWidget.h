@@ -36,6 +36,8 @@ private:
     // Процедура выводит на экран текст (подсказку)
     void textOut();
 
+    void swapColors(void);
+
 private:
     // Глубина объекта
     float zoffset = 3;
