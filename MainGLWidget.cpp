@@ -6,8 +6,7 @@
 #include "MainGLWidget.h"
 
 MainGLWidget::MainGLWidget(QWidget *parent)
-        : QOpenGLWidget(parent), shaderProgram()
-{
+        : QOpenGLWidget(parent), shaderProgram() {
     setWindowTitle("Трёхмерная графика. Цветной квадрат");
     //setWindowState(Qt::WindowFullScreen); // Разворачиваем приложение на весь экран
 }
@@ -60,13 +59,42 @@ void MainGLWidget::initializeGL() {
     resetModelView();
 }
 
-void MainGLWidget::swapColors(void)
-{
-    QVector4D T = color[0];
-    color[0] = color[1];
-    color[1] = color[2];
-    color[2] = color[3];
-    color[3] = T;
+void MainGLWidget::swapColors(void) {
+    qDebug() << "Was: " + QString::number(color[0].x()) + " " + QString::number(color[0].y()) + " " +
+                QString::number(color[0].z());
+    qDebug() << QString::number(color[1].x()) + " " + QString::number(color[1].y()) + " " +
+                QString::number(color[1].z());
+    qDebug() << QString::number(color[2].x()) + " " + QString::number(color[2].y()) + " " +
+                QString::number(color[2].z());
+    qDebug() << QString::number(color[3].x()) + " " + QString::number(color[3].y()) + " " +
+                QString::number(color[3].z());
+
+    QVector4D path(color[0]);
+    calculatePointColor(&color[0], &color[1]);
+    calculatePointColor(&color[1], &color[2]);
+    calculatePointColor(&color[2], &color[3]);
+    calculatePointColor(&color[3], &path);
+
+    qDebug() << "Has: " + QString::number(color[0].x()) + " " + QString::number(color[0].y()) + " " +
+                QString::number(color[0].z());
+    qDebug() << QString::number(color[1].x()) + " " + QString::number(color[1].y()) + " " +
+                QString::number(color[1].z());
+    qDebug() << QString::number(color[2].x()) + " " + QString::number(color[2].y()) + " " +
+                QString::number(color[2].z());
+    qDebug() << QString::number(color[3].x()) + " " + QString::number(color[3].y()) + " " +
+                QString::number(color[3].z());
+}
+
+void MainGLWidget::calculatePointColor(QVector4D *from, QVector4D *to) {
+
+    //x
+    from->setX(from->x() + (to->x() - from->x()) / 1.2);
+
+    //y
+    from->setY(from->y() + (to->y() - from->y()) / 1.2);
+
+    //z
+    from->setZ(from->z() + (to->z() - from->z()) / 1.2);
 }
 
 void MainGLWidget::resizeGL(int nWidth, int nHeight) {
@@ -85,10 +113,10 @@ void MainGLWidget::paintGL() {
 
     // Массив координат (x, y) четырёх вершин квадрата.
     // Координату z зададим в коде вершинного шейдера (z = 0)
-    static const float vertices[4 * 2] = {-1.0f,  1.0f,   // Первая вершина квадрата
+    static const float vertices[4 * 2] = {-1.0f, 1.0f,   // Первая вершина квадрата
                                           -1.0f, -1.0f,   // Вторая вершина квадрата
                                           1.0f, -1.0f,   // Третья вершина квадрата
-                                          1.0f,  1.0f};   // Четвёртая вершина квадрата
+                                          1.0f, 1.0f};   // Четвёртая вершина квадрата
 
     shaderProgram.bind();
 
@@ -101,7 +129,7 @@ void MainGLWidget::paintGL() {
     shaderProgram.enableAttributeArray(0);
 
     // Зададим цвет квадрата
-    shaderProgram.setAttributeArray(1, (float*)color, 4);
+    shaderProgram.setAttributeArray(1, (float *) color, 4);
     shaderProgram.enableAttributeArray(1);
 
     // Рисование примитива по координатам, заданным в массиве

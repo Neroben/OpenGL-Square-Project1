@@ -59,6 +59,8 @@ private:
 
     // Сборщик шейдерных подпрограмм
     QOpenGLShaderProgram shaderProgram;
+
+    void calculatePointColor(QVector4D *from, QVector4D *to);
 };
 
 
