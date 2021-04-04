@@ -11,14 +11,14 @@ void OpenGLWidget::initializeGL() {
     glEnable(GL_DEPTH_TEST);
 
     // Фоновый цвет
-    glClearColor(0.0f, 0.5f, 0.0f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // Режим рисования только лицевых граней
     glEnable(GL_CULL_FACE);
 
     // Сборка шейдеров
-    if(!shaderProgram->link())
-        qDebug() << shaderProgram->log();
+    if(!shaderProgram.link())
+        qDebug() << shaderProgram.log();
 
     resetModelView();
     initShader();
@@ -27,22 +27,22 @@ void OpenGLWidget::initializeGL() {
 void OpenGLWidget::initShader()
 {
     // Текст вершинного шейдера
-    shaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, ":resources/vertexShader.vsh");
+    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":resources/vertexShader.vsh");
 
     // Текст фрагментного шейдера
-    shaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, ":resources/fragmentShader.fsh");
+    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":resources/fragmentShader.fsh");
 
-    if (!shaderProgram->link())
-        qDebug() << shaderProgram->log();
-
-    // Создание идентификатора массива вершин
-    vertexLocation = shaderProgram->attributeLocation("vertex");
+    if (!shaderProgram.link())
+        qDebug() << shaderProgram.log();
 
     // Создание идентификатора массива вершин
-    matrixLocation = shaderProgram->uniformLocation("matrix");
+    vertexLocation = shaderProgram.attributeLocation("vertex");
+
+    // Создание идентификатора массива вершин
+    matrixLocation = shaderProgram.uniformLocation("matrix");
 
     // Идентификатор массива цветов
-    colorLocation =  shaderProgram->uniformLocation("color");
+    colorLocation =  shaderProgram.uniformLocation("color");
 }
 
 void OpenGLWidget::resizeGL(int nWidth, int nHeight)
@@ -102,21 +102,21 @@ void OpenGLWidget::glCube()
               4, 6, 2, 0,
               1, 3, 7, 5 }; // Индексы вершин шестой грани
 
-    shaderProgram->bind();
+    shaderProgram.bind();
 
-    shaderProgram->setUniformValue(matrixLocation, projectMatrix*modelViewMatrix);
+    shaderProgram.setUniformValue(matrixLocation, projectMatrix*modelViewMatrix);
 
-    shaderProgram->setUniformValue(colorLocation, QColor(255, 200, 14));
+    shaderProgram.setUniformValue(colorLocation, QColor(255, 200, 14));
 
-    shaderProgram->setAttributeArray(vertexLocation, (float*)vertices, 3);
+    shaderProgram.setAttributeArray(vertexLocation, (float*)vertices, 3);
 
-    shaderProgram->enableAttributeArray(vertexLocation);
+    shaderProgram.enableAttributeArray(vertexLocation);
 
     glDrawElements(GL_QUADS, 6*4, GL_UNSIGNED_SHORT, indeces);
 
-    shaderProgram->disableAttributeArray(vertexLocation);
+    shaderProgram.disableAttributeArray(vertexLocation);
 
-    shaderProgram->release();
+    shaderProgram.release();
 }
 
 

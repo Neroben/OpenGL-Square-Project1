@@ -13,13 +13,7 @@
 
 class OpenGLWidget : public QOpenGLWidget {
 public:
-    explicit OpenGLWidget(QWidget *parent) : QOpenGLWidget(parent) {
-        shaderProgram = new QOpenGLShaderProgram();
-    }
-    ~OpenGLWidget() {
-        delete shaderProgram;
-    }
-
+    explicit OpenGLWidget(QWidget *parent) : QOpenGLWidget(parent), shaderProgram(){}
 private:
     void initializeGL() override;
     void resizeGL(int nWidth, int nHeight) override;
@@ -64,12 +58,11 @@ private:
     QMatrix4x4 projectMatrix;
 
     // Сборщик шейдерных подпрограмм
-    QOpenGLShaderProgram *shaderProgram;
+    QOpenGLShaderProgram shaderProgram;
 
-    int vertexLocation;
-    int matrixLocation;
-    int colorLocation;
+    int vertexLocation{};
+    int matrixLocation{};
+    int colorLocation{};
 };
-
 
 #endif //OPENGL_OPENGLWIDGET_H
