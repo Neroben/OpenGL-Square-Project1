@@ -11,7 +11,7 @@ set(REQUIRED_LIBS Core Gui Widgets OpenGLWidgets OpenGL)
 set(REQUIRED_LIBS_QUALIFIED Qt6::Core Qt6::Gui Qt6::Widgets Qt6::OpenGLWidgets Qt6::OpenGL GLU32.LIB OPENGL32.LIB)
 cmake_minimum_required(VERSION 3.9)
 
-add_executable(${PROJECT_NAME} main.cpp MainGLWidget.cpp MainGLWidget.h resource.qrc)
+add_executable(${PROJECT_NAME} main.cpp MainGLWidget.cpp MainGLWidget.h)
 
 
 if (NOT CMAKE_PREFIX_PATH)
