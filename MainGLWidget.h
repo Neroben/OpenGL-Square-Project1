@@ -15,13 +15,14 @@ class MainGLWidget : public QOpenGLWidget {
 public:
     explicit MainGLWidget(QWidget *parent) : QOpenGLWidget(parent), shaderProgram(){}
 private:
-    void initializeGL() override;
-    void resizeGL(int nWidth, int nHeight) override;
-    void paintGL() override;
-    void mouseMoveEvent(QMouseEvent* m_event) override;
-    void wheelEvent(QWheelEvent* w_event) override;
-    void keyPressEvent(QKeyEvent* key_event) override;
-    void mousePressEvent(QMouseEvent* m_event) override;
+    // Глубина объекта
+    float zoffset = 3;
+
+    // Матрица поворота
+    QMatrix4x4 rotateMatrix; // Изначально матрица поворота равна единичной матрице
+
+    // Позиция указателя мыши
+    QPoint mousePosition;
 
     // Подпрограмма для рисования куба
     void glCube();
@@ -35,21 +36,16 @@ private:
     // Процедура для изменения матрицы поворота
     static void changeRotateMatrix(QMatrix4x4& rotate_matrix, float dx, float dy);
 
-    // Процедура выводит на экран текст (подсказку)
-    void textOut();
-
     // Инициализация шейдеров
-    void initShader();
+    void initShader(void);
 
-private:
-    // Глубина объекта
-    float zoffset = 3;
-
-    // Матрица поворота
-    QMatrix4x4 rotateMatrix; // Изначально матрица поворота равна единичной матрице
-
-    // Позиция указателя мыши
-    QPoint mousePosition;
+    void initializeGL();
+    void resizeGL(int nWidth, int nHeight);
+    void paintGL();
+    void mouseMoveEvent(QMouseEvent* m_event);
+    void wheelEvent(QWheelEvent* w_event);
+    void keyPressEvent(QKeyEvent* key_event);
+    void mousePressEvent(QMouseEvent* m_event);
 
     // Матрица видового преобразования
     QMatrix4x4 modelViewMatrix;
@@ -60,9 +56,8 @@ private:
     // Сборщик шейдерных подпрограмм
     QOpenGLShaderProgram shaderProgram;
 
-    int vertexLocation{};
-    int matrixLocation{};
-    int colorLocation{};
+    int vertexLocation;
+    int matrixLocation;
 };
 
 #endif //OPENGL_MAINGLWIDGET_H

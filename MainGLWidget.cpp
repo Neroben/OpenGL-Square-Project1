@@ -1,49 +1,69 @@
 // Автор: Осипов Олег Васильевич
-// Автор: Донцов Александр Алексеевич
 // Copyright © 2020 БГТУ им. В.Г. Шухова. Кафедра программного обеспечения вычислительной техники и автоматизированных систем.
 // Дата изменения: 14.03.2020
 
-
+// Приложение, использующее простейший шейдер для рисования куба с разноцветными гранями
 
 #include "MainGLWidget.h"
 
-void MainGLWidget::initializeGL() {
+//MainGLWidget::MainGLWidget(QWidget *parent)
+//        : QGLWidget(QGLFormat(), parent)
+//{
+//    setWindowTitle("Трёхмерная графика. Куб с разноцветными гранями");
+//    //setWindowState(Qt::WindowFullScreen); // Разворачиваем приложение на весь экран
+//}
+
+void MainGLWidget::initializeGL()
+{
+    // Включение сортировки по глубине
     glEnable(GL_DEPTH_TEST);
 
-    // Фоновый цвет
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
-    // Режим рисования только лицевых граней
+    // Рисуем только лицевые грани
     glEnable(GL_CULL_FACE);
 
-    // Сборка шейдеров
-    if(!shaderProgram.link())
-        qDebug() << shaderProgram.log();
-
+    // Инициализируем видовую матрицу
     resetModelView();
+
     initShader();
 }
 
-void MainGLWidget::initShader()
+
+
+void MainGLWidget::initShader(void)
 {
     // Текст вершинного шейдера
-    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":resources/vertexShader.vsh");
+    shaderProgram.addShaderFromSourceCode(QOpenGLShader::Vertex,
+                                           "#version 330 \n"
+                                           "attribute vec4 vertex;\n"
+                                           "uniform mat4 matrix;\n"
+                                           "in vec4 color;\n"
+                                           "out vec4 varyingColor;\n"
+                                           "void main(void)\n"
+                                           "{\n"
+                                           "   varyingColor = color;\n"
+                                           "   gl_Position = matrix * vertex;\n"
+                                           "}");
 
     // Текст фрагментного шейдера
-    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":resources/fragmentShader.fsh");
+    shaderProgram.addShaderFromSourceCode(QOpenGLShader::Fragment,
+                                           "#version 330 \n"
+                                           "in vec4 varyingColor;\n"
+                                           "out vec4 fragColor;\n"
+                                           "void main(void)\n"
+                                           "{\n"
+                                           "   fragColor = varyingColor;\n"
+                                           "}");
 
-    if (!shaderProgram.link())
+    if (shaderProgram.link() == false)
         qDebug() << shaderProgram.log();
 
     // Создание идентификатора массива вершин
     vertexLocation = shaderProgram.attributeLocation("vertex");
 
-    // Создание идентификатора массива вершин
+    // Создание идентификатора итоговой матрицы
     matrixLocation = shaderProgram.uniformLocation("matrix");
-
-    // Идентификатор массива цветов
-    colorLocation =  shaderProgram.uniformLocation("color");
 }
+
 
 void MainGLWidget::resizeGL(int nWidth, int nHeight)
 {
@@ -53,20 +73,17 @@ void MainGLWidget::resizeGL(int nWidth, int nHeight)
     resetProjection();
 }
 
+
+
 // Внутри данной подпрограммы происходит рисование объектов
 void MainGLWidget::paintGL()
 {
+    // Очистка буфера глубины и буфера цвета
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //рисование куба
+    // Рисование куба
     glCube();
 
-    textOut();
-}
-
-
-void MainGLWidget::textOut()
-{
     // Вывод на экран текста
     QPainter painter(this);
     painter.setPen(Qt::yellow);
@@ -79,54 +96,65 @@ void MainGLWidget::textOut()
     painter.end();
 }
 
-// Подпрограмма для рисования куба в начале координат
+
+
+// Подпрограмма для рисования куба
 void MainGLWidget::glCube()
 {
-    // Массив из 8 вершин куба
-    static const float vertices[8][3] =
-            {{ 1.0f,  1.0f,  1.0f}, // Координаты первой вершины
-             { 1.0f,  1.0f, -1.0f}, // Координаты второй вершины
-             { 1.0f, -1.0f,  1.0f},
-             { 1.0f, -1.0f, -1.0f},
-             {-1.0f,  1.0f,  1.0f},
-             {-1.0f,  1.0f, -1.0f},
-             {-1.0f, -1.0f,  1.0f},
-             {-1.0f, -1.0f, -1.0f}}; // Координаты восьмой вершины
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Массив индексов вершин vertices
-    static const GLushort indeces[] =
-            { 4, 5, 7, 6,   // Индексы вершин первой грани
-              2, 3, 1, 0,   // Индексы вершин второй грани
-              0, 1, 5, 4,   // ...
-              6, 7, 3, 2,
-              4, 6, 2, 0,
-              1, 3, 7, 5 }; // Индексы вершин шестой грани
+    // Массив из 24 вершин куба (6 граней, каждая из 4 вершин)
+    static const float vertices[6*4][3] =
+            {{ -1.0f,  1.0f,  1.0f}, { -1.0f,  -1.0f,  1.0f}, {  1.0f, -1.0f,  1.0f}, {  1.0f,  1.0f,  1.0f},  // Передняя грань (z =  1)
+             {  1.0f,  1.0f, -1.0f}, {  1.0f,  -1.0f, -1.0f}, { -1.0f, -1.0f, -1.0f}, { -1.0f,  1.0f, -1.0f},  // Задняя грань   (z = -1)
+             {  1.0f,  1.0f, -1.0f}, { -1.0f,   1.0f, -1.0f}, { -1.0f,  1.0f,  1.0f}, {  1.0f,  1.0f,  1.0f},  // Верхняя грань  (y =  1)
+             {  1.0f, -1.0f,  1.0f}, { -1.0f,  -1.0f,  1.0f}, { -1.0f, -1.0f, -1.0f}, {  1.0f, -1.0f, -1.0f},  // Нижняя грань   (y = -1)
+             {  1.0f, -1.0f,  1.0f}, {  1.0f,  -1.0f, -1.0f}, {  1.0f,  1.0f, -1.0f}, {  1.0f,  1.0f,  1.0f},  // Правая грань   (x =  1)
+             { -1.0f,  1.0f,  1.0f}, { -1.0f,   1.0f, -1.0f}, { -1.0f, -1.0f, -1.0f}, { -1.0f, -1.0f,  1.0f}}; // Левая грань    (x = -1)
+
+    // Массив цветов для каждой вершины
+    static const float colors[6*4][3] =
+            { { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.7f},   // Цвет передней грани
+              { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.7f},   // Цвет задней грани
+              { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f},   // Цвет верхней грани
+              { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f},   // Цвет нижней грани
+              { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.2f, 1.0f},   // Цвет правой грани
+              { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.2f, 1.0f} }; // Цвет левой грани
 
     shaderProgram.bind();
 
+    // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
     shaderProgram.setUniformValue(matrixLocation, projectMatrix*modelViewMatrix);
 
-    shaderProgram.setUniformValue(colorLocation, QColor(255, 200, 14));
-
+    // Передаём массив вершин (координаты каждой вершины задаются тремя числами)
     shaderProgram.setAttributeArray(vertexLocation, (float*)vertices, 3);
+
+    // Передаём массив цветов каждой вершины (цвет каждой вершины задаётся тремя числами)
+    shaderProgram.setAttributeArray("color", (float*)colors, 3);
+
+    shaderProgram.enableAttributeArray("color");
 
     shaderProgram.enableAttributeArray(vertexLocation);
 
-    glDrawElements(GL_QUADS, 6*4, GL_UNSIGNED_SHORT, indeces);
+    // Рисование 6 граней куба, координаты и цвета которых заданы в массиве. Всего массив содержит 24 вершины
+    glDrawArrays(GL_QUADS, 0, 6*4);
 
     shaderProgram.disableAttributeArray(vertexLocation);
+
+    shaderProgram.disableAttributeArray("color");
 
     shaderProgram.release();
 }
 
 
+
 void MainGLWidget::resetProjection()
 {
-    // Инициализация единичной матрицы
+    // Инициализация матрицы проектирования как единичной матрицы
     projectMatrix.setToIdentity();
 
     // Умножение на матрицу перспективного проектирования
-    projectMatrix.perspective(30.0, (float)width() / (float)height(), 0.1, 20);
+    projectMatrix.perspective(30.0, (float)width() / height(), 0.1, 20);
 }
 
 
@@ -155,19 +183,19 @@ void MainGLWidget::resetModelView()
 // Обработчик события перемещения указателя мыши (событие происходит при зажатой кнопке мыши)
 void MainGLWidget::mouseMoveEvent(QMouseEvent* m_event)
 {
-//    // Вычислим, на сколько переместился курсор мыши между двумя событиями mouseMoveEvent
+    // Вычислим, на сколько переместился курсор мыши между двумя событиями mouseMoveEvent
     QPoint dp = m_event->pos() - mousePosition;
-//    // Изменим матрицу поворота в соответствии с тем, как пользователь переместил курсор мыши
-    changeRotateMatrix(rotateMatrix, (float) dp.x(), (float) dp.y());
-//    // Сохраним текущую позицию мыши
+    // Изменим матрицу поворота в соответствии с тем, как пользователь переместил курсор мыши
+    changeRotateMatrix(rotateMatrix, dp.x(), dp.y());
+    // Сохраним текущую позицию мыши
     mousePosition = m_event->pos();
-//    // Обновим матрицу аффинных преобразований
+    // Обновим матрицу аффинных преобразований
     resetModelView();
     update(); // Перерисовать окно
 }
 
 
-// Процедура предназначена для изменения матрицы поворота, чтобы квадрат поворачивался в нужном направлении строго вслед за указателем мыши.
+// Процедура предназначена для изменения матрицы поворота, чтобы куб поворачивался в нужном направлении строго вслед за указателем мыши.
 // Вызывается, когда пользователь изменил положение указателя мыши при зажатой кнопке (мыши)
 void MainGLWidget::changeRotateMatrix(QMatrix4x4& R, float dx, float dy)
 {
@@ -192,9 +220,9 @@ void MainGLWidget::mousePressEvent(QMouseEvent* m_event)
 }
 
 
-void MainGLWidget::keyPressEvent(QKeyEvent *event)
+void MainGLWidget::keyPressEvent(QKeyEvent* event)
 {
-//     Закрыть окно при нажатии клавиши Escape
+    // Закрыть окно при нажатии клавиши Escape
     if (event->key() == Qt::Key_Escape)
     {
         close();
