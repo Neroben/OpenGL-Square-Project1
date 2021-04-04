@@ -57,7 +57,12 @@ private:
     QOpenGLShaderProgram shaderProgram;
 
     int vertexLocation;
+    int normalLocation;
     int matrixLocation;
+    int normalMatrixLocation;
+    int modelViewMatrixLocation;
+
+    void setLighting();
 };
 
 #endif //OPENGL_MAINGLWIDGET_H

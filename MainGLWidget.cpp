@@ -1,24 +1,17 @@
 // Автор: Осипов Олег Васильевич
 // Copyright © 2020 БГТУ им. В.Г. Шухова. Кафедра программного обеспечения вычислительной техники и автоматизированных систем.
-// Дата изменения: 14.03.2020
+// Дата изменения: 15.03.2020
 
-// Приложение, использующее простейший шейдер для рисования куба с разноцветными гранями
+// Приложение, использующее простейший шейдер для освещения куба
 
 #include "MainGLWidget.h"
-
-//MainGLWidget::MainGLWidget(QWidget *parent)
-//        : QGLWidget(QGLFormat(), parent)
-//{
-//    setWindowTitle("Трёхмерная графика. Куб с разноцветными гранями");
-//    //setWindowState(Qt::WindowFullScreen); // Разворачиваем приложение на весь экран
-//}
 
 void MainGLWidget::initializeGL()
 {
     // Включение сортировки по глубине
     glEnable(GL_DEPTH_TEST);
 
-    // Рисуем только лицевые грани
+    // Режим рисования только лицевых граней
     glEnable(GL_CULL_FACE);
 
     // Инициализируем видовую матрицу
@@ -32,27 +25,10 @@ void MainGLWidget::initializeGL()
 void MainGLWidget::initShader(void)
 {
     // Текст вершинного шейдера
-    shaderProgram.addShaderFromSourceCode(QOpenGLShader::Vertex,
-                                           "#version 330 \n"
-                                           "attribute vec4 vertex;\n"
-                                           "uniform mat4 matrix;\n"
-                                           "in vec4 color;\n"
-                                           "out vec4 varyingColor;\n"
-                                           "void main(void)\n"
-                                           "{\n"
-                                           "   varyingColor = color;\n"
-                                           "   gl_Position = matrix * vertex;\n"
-                                           "}");
+    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/resources/vertexLightingShader.vsh");
 
     // Текст фрагментного шейдера
-    shaderProgram.addShaderFromSourceCode(QOpenGLShader::Fragment,
-                                           "#version 330 \n"
-                                           "in vec4 varyingColor;\n"
-                                           "out vec4 fragColor;\n"
-                                           "void main(void)\n"
-                                           "{\n"
-                                           "   fragColor = varyingColor;\n"
-                                           "}");
+    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/resources/fragmentLightingShader.fsh");
 
     if (shaderProgram.link() == false)
         qDebug() << shaderProgram.log();
@@ -60,8 +36,32 @@ void MainGLWidget::initShader(void)
     // Создание идентификатора массива вершин
     vertexLocation = shaderProgram.attributeLocation("vertex");
 
-    // Создание идентификатора итоговой матрицы
+    // Создание идентификатора массива нормалей к вершинам
+    normalLocation = shaderProgram.attributeLocation("normal");
+
+    // Создание идентификатора матрицы
     matrixLocation = shaderProgram.uniformLocation("matrix");
+
+    // Идентификатор матрицы для пересчёта векторов нормалей
+    normalMatrixLocation = shaderProgram.uniformLocation("normalMatrix");
+
+    // Идентификатор видовой матрицы, которая будет использована для расчёта освещения
+    modelViewMatrixLocation = shaderProgram.uniformLocation("modelViewMatrix");
+}
+
+void MainGLWidget::setLighting()
+{
+    // Цвет фонового освещения
+    shaderProgram.setUniformValue("ambientColor", QVector3D(0.0, 0.2, 0.0));
+
+    // Цвет самого источника
+    shaderProgram.setUniformValue("diffuseColor", QVector3D(0.6, 0.6, 0.5));
+
+    // Цвет объекта
+    shaderProgram.setUniformValue("objectColor", QVector3D(0.0, 0.5, 0.9));
+
+    // Позиция источника света
+    shaderProgram.setUniformValue("lightPos", QVector3D(0.0, 0.1, -2.5));
 }
 
 
@@ -101,9 +101,7 @@ void MainGLWidget::paintGL()
 // Подпрограмма для рисования куба
 void MainGLWidget::glCube()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Массив из 24 вершин куба (6 граней, каждая из 4 вершин)
+    // Массив из 24 вершин (6 граней куба, каждая из 4 вершин)
     static const float vertices[6*4][3] =
             {{ -1.0f,  1.0f,  1.0f}, { -1.0f,  -1.0f,  1.0f}, {  1.0f, -1.0f,  1.0f}, {  1.0f,  1.0f,  1.0f},  // Передняя грань (z =  1)
              {  1.0f,  1.0f, -1.0f}, {  1.0f,  -1.0f, -1.0f}, { -1.0f, -1.0f, -1.0f}, { -1.0f,  1.0f, -1.0f},  // Задняя грань   (z = -1)
@@ -112,36 +110,45 @@ void MainGLWidget::glCube()
              {  1.0f, -1.0f,  1.0f}, {  1.0f,  -1.0f, -1.0f}, {  1.0f,  1.0f, -1.0f}, {  1.0f,  1.0f,  1.0f},  // Правая грань   (x =  1)
              { -1.0f,  1.0f,  1.0f}, { -1.0f,   1.0f, -1.0f}, { -1.0f, -1.0f, -1.0f}, { -1.0f, -1.0f,  1.0f}}; // Левая грань    (x = -1)
 
-    // Массив цветов для каждой вершины
-    static const float colors[6*4][3] =
-            { { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.7f},   // Цвет передней грани
-              { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.2f}, { 1.0f, 0.5f, 0.7f},   // Цвет задней грани
-              { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f},   // Цвет верхней грани
-              { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f}, { 0.8f, 0.9f, 0.1f},   // Цвет нижней грани
-              { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.2f, 1.0f},   // Цвет правой грани
-              { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.6f, 0.9f}, { 0.0f, 0.2f, 1.0f} }; // Цвет левой грани
+    // Массив нормалей каждой вершины из массива vertices
+    static const float normals[6*4][3] =
+            { { 0.0f,  0.0f,  1.0f}, { 0.0f,  0.0f,  1.0f}, { 0.0f,  0.0f,  1.0f}, { 0.0f,  0.0f,  1.0f},   // Вектора нормалей передней грани
+              { 0.0f,  0.0f, -1.0f}, { 0.0f,  0.0f, -1.0f}, { 0.0f,  0.0f, -1.0f}, { 0.0f,  0.0f, -1.0f},   // Вектора нормалей задней грани
+              { 0.0f,  1.0f,  0.0f}, { 0.0f,  1.0f,  0.0f}, { 0.0f,  1.0f,  0.0f}, { 0.0f,  1.0f,  0.0f},   // Вектора нормалей верхней грани
+              { 0.0f, -1.0f,  0.0f}, { 0.0f, -1.0f,  0.0f}, { 0.0f, -1.0f,  0.0f}, { 0.0f, -1.0f,  0.0f},   // Вектора нормалей нижней грани
+              { 1.0f,  0.0f,  0.0f}, { 1.0f,  0.0f,  0.0f}, { 1.0f,  0.0f,  0.0f}, { 1.0f,  0.0f,  0.0f},   // Вектора нормалей правой грани
+              {-1.0f,  0.0f,  0.0f}, {-1.0f,  0.0f,  0.0f}, {-1.0f,  0.0f,  0.0f}, {-1.0f,  0.0f,  0.0f} }; // Вектора нормалей левой грани
 
     shaderProgram.bind();
 
+    // Устанавливаем параметры освещения
+    setLighting();
+
     // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
-    shaderProgram.setUniformValue(matrixLocation, projectMatrix*modelViewMatrix);
+    shaderProgram.setUniformValue(matrixLocation, projectMatrix * modelViewMatrix);
+
+    // Матрица, используемая для пересчёта векторов нормалей в вершинном шейдере
+    shaderProgram.setUniformValue(normalMatrixLocation, modelViewMatrix.normalMatrix());
+
+    // Видовая матрица для вершинного шейдера
+    shaderProgram.setUniformValue(modelViewMatrixLocation, modelViewMatrix);
 
     // Передаём массив вершин (координаты каждой вершины задаются тремя числами)
     shaderProgram.setAttributeArray(vertexLocation, (float*)vertices, 3);
 
-    // Передаём массив цветов каждой вершины (цвет каждой вершины задаётся тремя числами)
-    shaderProgram.setAttributeArray("color", (float*)colors, 3);
-
-    shaderProgram.enableAttributeArray("color");
+    // Передаём массив векторов нормалей к вершинам vertices. Третий параметр означает, что каждый вектор состоит из трёх чисел
+    shaderProgram.setAttributeArray(normalLocation, (float*)normals, 3);
 
     shaderProgram.enableAttributeArray(vertexLocation);
 
-    // Рисование 6 граней куба, координаты и цвета которых заданы в массиве. Всего массив содержит 24 вершины
+    shaderProgram.enableAttributeArray(normalLocation);
+
+    // Рисование 6 граней куба, координаты и нормали которых заранее переданы в массивах. Всего массивы содержит 24 вершины
     glDrawArrays(GL_QUADS, 0, 6*4);
 
     shaderProgram.disableAttributeArray(vertexLocation);
 
-    shaderProgram.disableAttributeArray("color");
+    shaderProgram.disableAttributeArray(normalLocation);
 
     shaderProgram.release();
 }
@@ -150,7 +157,7 @@ void MainGLWidget::glCube()
 
 void MainGLWidget::resetProjection()
 {
-    // Инициализация матрицы проектирования как единичной матрицы
+    // Инициализация единичной матрицы
     projectMatrix.setToIdentity();
 
     // Умножение на матрицу перспективного проектирования
