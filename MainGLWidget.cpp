@@ -1,9 +1,10 @@
-// Автор: Осипов Олег Васильевич
-// Автор: Донцов Александр Алексеевич
+// Авторы: Осипов Олег Васильевич
+//         Донцов Александр Алексеевич
 // Copyright © 2021 БГТУ им. В.Г. Шухова. Кафедра программного обеспечения вычислительной техники и автоматизированных систем.
-// Дата изменения: 27.03.2021
+// Дата изменения: 04.04.2021
 
 #include "MainGLWidget.h"
+#include <QTimer>
 
 MainGLWidget::MainGLWidget(QWidget *parent)
         : QOpenGLWidget(parent), shaderProgram() {
@@ -44,10 +45,10 @@ void MainGLWidget::initializeGL() {
                                           "   fragColor = vertexColor;\n"
                                           "}");
 
-    color[0] = QVector4D(1.0f, 0.0f, 0.0f, 1.0f);
-    color[1] = QVector4D(0.0f, 1.0f, 0.0f, 1.0f);
-    color[2] = QVector4D(0.0f, 0.0f, 1.0f, 1.0f);
-    color[3] = QVector4D(1.0f, 1.0f, 1.0f, 1.0f);
+    vertexColors[0] = QVector4D(1.0f, 0.0f, 0.0f, 1.0f);
+    vertexColors[1] = QVector4D(0.0f, 1.0f, 0.0f, 1.0f);
+    vertexColors[2] = QVector4D(0.0f, 0.0f, 1.0f, 1.0f);
+    vertexColors[3] = QVector4D(1.0f, 1.0f, 1.0f, 1.0f);
 
     // Сборка шейдеров
     if (!shaderProgram.link())
@@ -57,44 +58,38 @@ void MainGLWidget::initializeGL() {
     zoffset -= 0.5;
 
     resetModelView();
+
+    // Таймер для поворота квадрата
+    QTimer *rotateTimer = new QTimer();
+    connect(rotateTimer, SIGNAL(timeout()), this, SLOT(rotateColorsTrigger()));
+    rotateTimer->start(30);
+    rotateTimer->deleteLater();
+    irotate = 0;
 }
 
-void MainGLWidget::swapColors(void) {
-    qDebug() << "Was: " + QString::number(color[0].x()) + " " + QString::number(color[0].y()) + " " +
-                QString::number(color[0].z());
-    qDebug() << QString::number(color[1].x()) + " " + QString::number(color[1].y()) + " " +
-                QString::number(color[1].z());
-    qDebug() << QString::number(color[2].x()) + " " + QString::number(color[2].y()) + " " +
-                QString::number(color[2].z());
-    qDebug() << QString::number(color[3].x()) + " " + QString::number(color[3].y()) + " " +
-                QString::number(color[3].z());
 
-    QVector4D path(color[0]);
-    calculatePointColor(&color[0], &color[1]);
-    calculatePointColor(&color[1], &color[2]);
-    calculatePointColor(&color[2], &color[3]);
-    calculatePointColor(&color[3], &path);
+void MainGLWidget::rotateColors() {
 
-    qDebug() << "Has: " + QString::number(color[0].x()) + " " + QString::number(color[0].y()) + " " +
-                QString::number(color[0].z());
-    qDebug() << QString::number(color[1].x()) + " " + QString::number(color[1].y()) + " " +
-                QString::number(color[1].z());
-    qDebug() << QString::number(color[2].x()) + " " + QString::number(color[2].y()) + " " +
-                QString::number(color[2].z());
-    qDebug() << QString::number(color[3].x()) + " " + QString::number(color[3].y()) + " " +
-                QString::number(color[3].z());
+    if (irotate % N_ROTATE == 0) {
+        // Расчёт разницы цветов двух соседних вершин и приращений цветов
+        for (int i = 0; i < 4; i++) {
+            deltaColors[i] = (vertexColors[(i + 1) % 4] - vertexColors[i]) / N_ROTATE;
+        }
+        // Здесь можно немного оптимизировать вычисления: предварительно заполнить массив deltaColors в конструкторе класса,
+        // а затем сдвигать циклически все его элементы каждые N_ROTATE итераций
+    }
+
+    // Приращение цветов
+    for (int i = 0; i < 4; i++) {
+        vertexColors[i] += deltaColors[i];
+    }
+    irotate++;
 }
 
-void MainGLWidget::calculatePointColor(QVector4D *from, QVector4D *to) {
 
-    //x
-    from->setX(from->x() + (to->x() - from->x()) / 1.2);
-
-    //y
-    from->setY(from->y() + (to->y() - from->y()) / 1.2);
-
-    //z
-    from->setZ(from->z() + (to->z() - from->z()) / 1.2);
+void MainGLWidget::rotateColorsTrigger() {
+    rotateColors();
+    update(); // Перерисовать окно
 }
 
 void MainGLWidget::resizeGL(int nWidth, int nHeight) {
@@ -129,7 +124,7 @@ void MainGLWidget::paintGL() {
     shaderProgram.enableAttributeArray(0);
 
     // Зададим цвет квадрата
-    shaderProgram.setAttributeArray(1, (float *) color, 4);
+    shaderProgram.setAttributeArray(1, (float *) vertexColors, 4);
     shaderProgram.enableAttributeArray(1);
 
     // Рисование примитива по координатам, заданным в массиве
@@ -141,8 +136,6 @@ void MainGLWidget::paintGL() {
     shaderProgram.disableAttributeArray(1);
 
     shaderProgram.release();
-
-    swapColors();
 
     textOut();
 }
