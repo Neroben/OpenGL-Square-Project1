@@ -5,9 +5,9 @@
 // Приложение, использующее простейший шейдер для освещения куба
 
 #include "MainGLWidget.h"
+#include "geometry/JCube.h"
 
-void MainGLWidget::initializeGL()
-{
+void MainGLWidget::initializeGL() {
     // Включение сортировки по глубине
     glEnable(GL_DEPTH_TEST);
 
@@ -21,9 +21,7 @@ void MainGLWidget::initializeGL()
 }
 
 
-
-void MainGLWidget::initShader(void)
-{
+void MainGLWidget::initShader(void) {
     // Текст вершинного шейдера
     shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/resources/vertexLightingShader.vsh");
 
@@ -49,8 +47,7 @@ void MainGLWidget::initShader(void)
     modelViewMatrixLocation = shaderProgram.uniformLocation("modelViewMatrix");
 }
 
-void MainGLWidget::setLighting()
-{
+void MainGLWidget::setLighting() {
     // Цвет фонового освещения
     shaderProgram.setUniformValue("ambientColor", QVector3D(0.0, 0.2, 0.0));
 
@@ -61,12 +58,11 @@ void MainGLWidget::setLighting()
     shaderProgram.setUniformValue("objectColor", QVector3D(0.0, 0.5, 0.9));
 
     // Позиция источника света
-    shaderProgram.setUniformValue("lightPos", QVector3D(0.0, 0.1, -2.5));
+    shaderProgram.setUniformValue("lightPos", QVector3D(0.0, 0.0, -10.5));
 }
 
 
-void MainGLWidget::resizeGL(int nWidth, int nHeight)
-{
+void MainGLWidget::resizeGL(int nWidth, int nHeight) {
     // Задание области вывода
     glViewport(0, 0, nWidth, nHeight);
     // Задаём матрицу центрального проектирования
@@ -74,10 +70,8 @@ void MainGLWidget::resizeGL(int nWidth, int nHeight)
 }
 
 
-
 // Внутри данной подпрограммы происходит рисование объектов
-void MainGLWidget::paintGL()
-{
+void MainGLWidget::paintGL() {
     // Очистка буфера глубины и буфера цвета
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -97,27 +91,91 @@ void MainGLWidget::paintGL()
 }
 
 
-
 // Подпрограмма для рисования куба
-void MainGLWidget::glCube()
-{
+void MainGLWidget::glCube() {
     // Массив из 24 вершин (6 граней куба, каждая из 4 вершин)
-    static const float vertices[6*4][3] =
-            {{ -1.0f,  1.0f,  1.0f}, { -1.0f,  -1.0f,  1.0f}, {  1.0f, -1.0f,  1.0f}, {  1.0f,  1.0f,  1.0f},  // Передняя грань (z =  1)
-             {  1.0f,  1.0f, -1.0f}, {  1.0f,  -1.0f, -1.0f}, { -1.0f, -1.0f, -1.0f}, { -1.0f,  1.0f, -1.0f},  // Задняя грань   (z = -1)
-             {  1.0f,  1.0f, -1.0f}, { -1.0f,   1.0f, -1.0f}, { -1.0f,  1.0f,  1.0f}, {  1.0f,  1.0f,  1.0f},  // Верхняя грань  (y =  1)
-             {  1.0f, -1.0f,  1.0f}, { -1.0f,  -1.0f,  1.0f}, { -1.0f, -1.0f, -1.0f}, {  1.0f, -1.0f, -1.0f},  // Нижняя грань   (y = -1)
-             {  1.0f, -1.0f,  1.0f}, {  1.0f,  -1.0f, -1.0f}, {  1.0f,  1.0f, -1.0f}, {  1.0f,  1.0f,  1.0f},  // Правая грань   (x =  1)
-             { -1.0f,  1.0f,  1.0f}, { -1.0f,   1.0f, -1.0f}, { -1.0f, -1.0f, -1.0f}, { -1.0f, -1.0f,  1.0f}}; // Левая грань    (x = -1)
+    static const float vertices[6 * 4][3] =
+            {{-1.0f, 1.0f,  1.0f},
+             {-1.0f, -1.0f, 1.0f},
+             {1.0f,  -1.0f, 1.0f},
+             {1.0f,  1.0f,  1.0f},  // Передняя грань (z =  1)
+             {1.0f,  1.0f,  -1.0f},
+             {1.0f,  -1.0f, -1.0f},
+             {-1.0f, -1.0f, -1.0f},
+             {-1.0f, 1.0f,  -1.0f},  // Задняя грань   (z = -1)
+             {1.0f,  1.0f,  -1.0f},
+             {-1.0f, 1.0f,  -1.0f},
+             {-1.0f, 1.0f,  1.0f},
+             {1.0f,  1.0f,  1.0f},  // Верхняя грань  (y =  1)
+             {1.0f,  -1.0f, 1.0f},
+             {-1.0f, -1.0f, 1.0f},
+             {-1.0f, -1.0f, -1.0f},
+             {1.0f,  -1.0f, -1.0f},  // Нижняя грань   (y = -1)
+             {1.0f,  -1.0f, 1.0f},
+             {1.0f,  -1.0f, -1.0f},
+             {1.0f,  1.0f,  -1.0f},
+             {1.0f,  1.0f,  1.0f},  // Правая грань   (x =  1)
+             {-1.0f, 1.0f,  1.0f},
+             {-1.0f, 1.0f,  -1.0f},
+             {-1.0f, -1.0f, -1.0f},
+             {-1.0f, -1.0f, 1.0f}}; // Левая грань    (x = -1)
 
     // Массив нормалей каждой вершины из массива vertices
-    static const float normals[6*4][3] =
-            { { 0.0f,  0.0f,  1.0f}, { 0.0f,  0.0f,  1.0f}, { 0.0f,  0.0f,  1.0f}, { 0.0f,  0.0f,  1.0f},   // Вектора нормалей передней грани
-              { 0.0f,  0.0f, -1.0f}, { 0.0f,  0.0f, -1.0f}, { 0.0f,  0.0f, -1.0f}, { 0.0f,  0.0f, -1.0f},   // Вектора нормалей задней грани
-              { 0.0f,  1.0f,  0.0f}, { 0.0f,  1.0f,  0.0f}, { 0.0f,  1.0f,  0.0f}, { 0.0f,  1.0f,  0.0f},   // Вектора нормалей верхней грани
-              { 0.0f, -1.0f,  0.0f}, { 0.0f, -1.0f,  0.0f}, { 0.0f, -1.0f,  0.0f}, { 0.0f, -1.0f,  0.0f},   // Вектора нормалей нижней грани
-              { 1.0f,  0.0f,  0.0f}, { 1.0f,  0.0f,  0.0f}, { 1.0f,  0.0f,  0.0f}, { 1.0f,  0.0f,  0.0f},   // Вектора нормалей правой грани
-              {-1.0f,  0.0f,  0.0f}, {-1.0f,  0.0f,  0.0f}, {-1.0f,  0.0f,  0.0f}, {-1.0f,  0.0f,  0.0f} }; // Вектора нормалей левой грани
+    static const float normals[6 * 4][3] =
+            {{0.0f,  0.0f,  1.0f},
+             {0.0f,  0.0f,  1.0f},
+             {0.0f,  0.0f,  1.0f},
+             {0.0f,  0.0f,  1.0f},   // Вектора нормалей передней грани
+             {0.0f,  0.0f,  -1.0f},
+             {0.0f,  0.0f,  -1.0f},
+             {0.0f,  0.0f,  -1.0f},
+             {0.0f,  0.0f,  -1.0f},   // Вектора нормалей задней грани
+             {0.0f,  1.0f,  0.0f},
+             {0.0f,  1.0f,  0.0f},
+             {0.0f,  1.0f,  0.0f},
+             {0.0f,  1.0f,  0.0f},   // Вектора нормалей верхней грани
+             {0.0f,  -1.0f, 0.0f},
+             {0.0f,  -1.0f, 0.0f},
+             {0.0f,  -1.0f, 0.0f},
+             {0.0f,  -1.0f, 0.0f},   // Вектора нормалей нижней грани
+             {1.0f,  0.0f,  0.0f},
+             {1.0f,  0.0f,  0.0f},
+             {1.0f,  0.0f,  0.0f},
+             {1.0f,  0.0f,  0.0f},   // Вектора нормалей правой грани
+             {-1.0f, 0.0f,  0.0f},
+             {-1.0f, 0.0f,  0.0f},
+             {-1.0f, 0.0f,  0.0f},
+             {-1.0f, 0.0f,  0.0f}}; // Вектора нормалей левой грани
+
+    QVector3D vec1;
+    QVector3D vec2;
+
+    vec1.setX(-1.0f);
+    vec1.setY(-1.0f);
+    vec1.setZ(-1.0f);
+    vec2.setX(1.0f);
+    vec2.setY(1.0f);
+    vec2.setZ(1.0f);
+
+    JCube cube;
+    cube.init(vec1, vec2);
+
+    float *vert = cube.getVertices();
+
+    for (int i = 0; i < 6; i++) {
+        QString string;
+        for (int j = 0; j < 4; j++) {
+            string.append("{");
+            for (int k = 0; k < 3; k++) {
+                string.append(QString::number(vert[i*4*3 + j * 3 + k]));
+                string.append(",");
+            }
+            string.append("},");
+        }
+        qDebug() << string;
+    }
+
+    qDebug() << "";
 
     shaderProgram.bind();
 
@@ -134,10 +192,10 @@ void MainGLWidget::glCube()
     shaderProgram.setUniformValue(modelViewMatrixLocation, modelViewMatrix);
 
     // Передаём массив вершин (координаты каждой вершины задаются тремя числами)
-    shaderProgram.setAttributeArray(vertexLocation, (float*)vertices, 3);
+    shaderProgram.setAttributeArray(vertexLocation, cube.getVertices(), 3);
 
     // Передаём массив векторов нормалей к вершинам vertices. Третий параметр означает, что каждый вектор состоит из трёх чисел
-    shaderProgram.setAttributeArray(normalLocation, (float*)normals, 3);
+    shaderProgram.setAttributeArray(normalLocation, cube.getNormales(), 3);
 
     shaderProgram.enableAttributeArray(vertexLocation);
 
@@ -154,21 +212,17 @@ void MainGLWidget::glCube()
 }
 
 
-
-void MainGLWidget::resetProjection()
-{
+void MainGLWidget::resetProjection() {
     // Инициализация единичной матрицы
     projectMatrix.setToIdentity();
 
     // Умножение на матрицу перспективного проектирования
-    projectMatrix.perspective(30.0, (float)width() / height(), 0.1, 20);
+    projectMatrix.perspective(30.0, (float) width() / height(), 0.1, 20);
 }
 
 
-
 // Процедура для изменения видовой матрицы
-void MainGLWidget::resetModelView()
-{
+void MainGLWidget::resetModelView() {
     // Инициализация видовой матрицы как единичной
     modelViewMatrix.setToIdentity();
 
@@ -188,8 +242,7 @@ void MainGLWidget::resetModelView()
 
 
 // Обработчик события перемещения указателя мыши (событие происходит при зажатой кнопке мыши)
-void MainGLWidget::mouseMoveEvent(QMouseEvent* m_event)
-{
+void MainGLWidget::mouseMoveEvent(QMouseEvent *m_event) {
     // Вычислим, на сколько переместился курсор мыши между двумя событиями mouseMoveEvent
     QPoint dp = m_event->pos() - mousePosition;
     // Изменим матрицу поворота в соответствии с тем, как пользователь переместил курсор мыши
@@ -204,34 +257,29 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* m_event)
 
 // Процедура предназначена для изменения матрицы поворота, чтобы куб поворачивался в нужном направлении строго вслед за указателем мыши.
 // Вызывается, когда пользователь изменил положение указателя мыши при зажатой кнопке (мыши)
-void MainGLWidget::changeRotateMatrix(QMatrix4x4& R, float dx, float dy)
-{
+void MainGLWidget::changeRotateMatrix(QMatrix4x4 &R, float dx, float dy) {
     R.rotate(-dx, 0, 1, 0);         // Умножение R на матрицу поворота вокруг оси y
     R.rotate(-dy, 1, 0, 0);         // Умножение R на матрицу поворота вокруг оси x
 }
 
 
 // Обработчик события прокрутки колеса мыши
-void MainGLWidget::wheelEvent(QWheelEvent* w_event)
-{
+void MainGLWidget::wheelEvent(QWheelEvent *w_event) {
     // При прокрутке колеса мыши изменяем глубину объекта
-    zoffset -= (float)(w_event->angleDelta().x() + w_event->angleDelta().y()) / 500.0f;
+    zoffset -= (float) (w_event->angleDelta().x() + w_event->angleDelta().y()) / 500.0f;
     resetModelView(); // Обновим матрицу аффинных преобразований
     update(); // Перерисовать окно
 }
 
 
-void MainGLWidget::mousePressEvent(QMouseEvent* m_event)
-{
+void MainGLWidget::mousePressEvent(QMouseEvent *m_event) {
     mousePosition = m_event->pos();
 }
 
 
-void MainGLWidget::keyPressEvent(QKeyEvent* event)
-{
+void MainGLWidget::keyPressEvent(QKeyEvent *event) {
     // Закрыть окно при нажатии клавиши Escape
-    if (event->key() == Qt::Key_Escape)
-    {
+    if (event->key() == Qt::Key_Escape) {
         close();
     }
 }
