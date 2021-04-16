@@ -71,6 +71,8 @@ public:
 
     void getVertices(float* vertices);
 
+    void getNormals(float* normalArr);
+
 };
 
 

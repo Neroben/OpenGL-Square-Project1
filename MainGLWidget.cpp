@@ -58,7 +58,7 @@ void MainGLWidget::setLighting() {
     shaderProgram.setUniformValue("objectColor", QVector3D(0.0, 0.5, 0.9));
 
     // Позиция источника света
-    shaderProgram.setUniformValue("lightPos", QVector3D(0.0, 0.0, -10.5));
+    shaderProgram.setUniformValue("lightPos", QVector3D(0.0, 0.0, -2.5));
 }
 
 

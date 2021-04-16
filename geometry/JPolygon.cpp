@@ -185,3 +185,12 @@ void JPolygon::getVertices(float* vertices) {
         vertices[i*3 + 2] = (*this)[i].z();
     }
 }
+
+void JPolygon::getNormals(float *normalArr) {
+    QVector3D normal = this->normal();
+    for(int i = 0; i < this->nVertices(); i++) {
+        normalArr[i*3] = normal.x();
+        normalArr[i*3 + 1] = normal.y();
+        normalArr[i*3 + 2] = normal.z();
+    }
+}

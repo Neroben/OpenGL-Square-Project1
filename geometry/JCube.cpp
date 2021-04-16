@@ -62,12 +62,7 @@ float* JCube::getNormales() {
 
     for(int i = 0; i < polygons.size(); i++) {
         JPolygon p = polygons[i];
-        QVector3D normal = p.normal();
-        for(int j = 0; j < p.nVertices(); j++) {
-            normales[i*p.nVertices() + j*3] = normal.x();
-            normales[i*p.nVertices() + j*3 + 1] = normal.y();
-            normales[i*p.nVertices() + j*3 + 2] = normal.z();
-        }
+        p.getNormals(&(normales[i*4*3]));
     }
     return normales;
 }
