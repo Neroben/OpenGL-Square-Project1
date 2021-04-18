@@ -19,17 +19,20 @@ public:
     // Выделен ли куб мышью?
     bool is_selecting;
 
-    float vertices[6*4*3];
-    float normales[6*4*3];
+    float *vertices = nullptr;
+    float *normales = nullptr;
+    float *colors = nullptr;
 
     ///
     /// \brief Массив из 6 граней параллелепипеда
     ///
     QVector<JPolygon> polygons;
 
-    float* getVertices();
+    float *getVertices();
 
-    JCube();
+    JCube(){};
+
+    ~JCube();
 
     ///
     /// \brief init
@@ -44,9 +47,11 @@ public:
     /// \param ray - параметры луча в трёхмерном пространстве
     /// \return Возвращает количество точек пересечения луча с кубом
     ///
-    int intersects(const JRay& ray, QVector3D* R) const;
+    int intersects(const JRay &ray, QVector3D *R) const;
 
     float *getNormales();
+
+    float *getColors();
 };
 
 

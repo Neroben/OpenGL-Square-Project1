@@ -73,13 +73,9 @@ void MainGLWidget::setLighting() {
     // Цвет самого источника
     shaderProgram.setUniformValue("diffuseColor", QVector3D(0.6, 0.6, 0.5));
 
-    // Цвет объекта
-    shaderProgram.setUniformValue("objectColor", QVector3D(0.0, 0.5, 0.9));
-
     // Позиция источника света
     shaderProgram.setUniformValue("lightPos", QVector3D(0.0, 0.0, -2.5));
 }
-
 
 void MainGLWidget::resizeGL(int nWidth, int nHeight) {
     // Задание области вывода
@@ -87,7 +83,6 @@ void MainGLWidget::resizeGL(int nWidth, int nHeight) {
     // Задаём матрицу центрального проектирования
     resetProjection();
 }
-
 
 // Внутри данной подпрограммы происходит рисование объектов
 void MainGLWidget::paintGL() {
@@ -126,6 +121,14 @@ void MainGLWidget::glCube() {
 
     // Видовая матрица для вершинного шейдера
     shaderProgram.setUniformValue(modelViewMatrixLocation, modelViewMatrix);
+
+    if(cubes[0].is_selecting) {
+        // Цвет объекта
+        shaderProgram.setUniformValue("objectColor", QVector3D(1.0, 0.5, 0.9));
+    } else {
+        // Цвет объекта
+        shaderProgram.setUniformValue("objectColor", QVector3D(0.0, 0.5, 0.9));
+    }
 
     // Передаём массив вершин (координаты каждой вершины задаются тремя числами)
     shaderProgram.setAttributeArray(vertexLocation, cubes[0].getVertices(), 3);

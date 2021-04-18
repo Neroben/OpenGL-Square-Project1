@@ -4,7 +4,10 @@
 
 #include "JCube.h"
 
-JCube::JCube() {
+JCube::~JCube() {
+    delete[] vertices;
+    delete[] normales;
+    delete[] colors;
 }
 
 void JCube::init(QVector3D A, QVector3D B) {
@@ -43,14 +46,28 @@ int JCube::intersects(const JRay &ray, QVector3D *R) const {
 }
 
 float *JCube::getVertices() {
-    for (int i = 0; i < polygons.size(); i++) {
-        JPolygon p = polygons[i];
-        p.getVertices(&(vertices[i * 4 * 3]));
+    if (vertices == nullptr) {
+        vertices = new float[6 * 4 * 3];
+        for (int i = 0; i < polygons.size(); i++) {
+            JPolygon p = polygons[i];
+            p.getVertices(&(vertices[i * 4 * 3]));
+        }
     }
     return vertices;
 }
 
 float *JCube::getNormales() {
+    if (normales == nullptr) {
+        normales = new float[6 * 4 * 3];
+        for (int i = 0; i < polygons.size(); i++) {
+            JPolygon p = polygons[i];
+            p.getNormals(&(normales[i * 4 * 3]));
+        }
+    }
+    return normales;
+}
+
+float *JCube::getColors() {
     for (int i = 0; i < polygons.size(); i++) {
         JPolygon p = polygons[i];
         p.getNormals(&(normales[i * 4 * 3]));

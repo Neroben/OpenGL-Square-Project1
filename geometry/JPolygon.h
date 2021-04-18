@@ -28,6 +28,8 @@ class JPolygon : QVector<QVector3D*> {
     ///
     bool inside(const QVector3D& R) const;
 
+    bool isSelected = false;
+
 public:
     JPolygon();
 

@@ -26,7 +26,7 @@ JPolygon::JPolygon(QVector3D *V1, QVector3D *V2, QVector3D *V3)
     push_back(V2);
     push_back(V3);
     initNormal();
-    //sort_vertices();
+//    sort_vertices();
 }
 
 JPolygon::JPolygon(QVector3D* V1, QVector3D* V2, QVector3D* V3, QVector3D* V4)
@@ -36,7 +36,7 @@ JPolygon::JPolygon(QVector3D* V1, QVector3D* V2, QVector3D* V3, QVector3D* V4)
     push_back(V3);
     push_back(V4);
     initNormal();
-    //sort_vertices();
+//    sort_vertices();
 }
 
 // Сортировка вершин по часовой стрелке
