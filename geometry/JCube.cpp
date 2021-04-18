@@ -4,13 +4,10 @@
 
 #include "JCube.h"
 
-JCube::JCube()
-{
-
+JCube::JCube() {
 }
 
-void JCube::init(QVector3D A, QVector3D B)
-{
+void JCube::init(QVector3D A, QVector3D B) {
     // Задаём координаты 8 вершин
     V[0] = QVector3D(A.x(), A.y(), A.z());
     V[1] = QVector3D(A.x(), A.y(), B.z());
@@ -33,12 +30,10 @@ void JCube::init(QVector3D A, QVector3D B)
 }
 
 
-int JCube::intersects(const JRay &ray, QVector3D* R) const
-{
+int JCube::intersects(const JRay &ray, QVector3D *R) const {
     QVector3D C;
     int k = 0;
-    for (int i=0; i < polygons.size(); i++)
-    {
+    for (int i = 0; i < polygons.size(); i++) {
         // Если луч пересекает хотя бы одну грань, то считаем, что луч пересёк куб
         // В R записываем координаты точек пересечения с гранями
         if (polygons[i].intersects(ray, C))
@@ -47,22 +42,18 @@ int JCube::intersects(const JRay &ray, QVector3D* R) const
     return k;
 }
 
-float* JCube::getVertices() {
-    float *vertices = new float[6*4*3];
-
-    for(int i = 0; i < polygons.size(); i++) {
+float *JCube::getVertices() {
+    for (int i = 0; i < polygons.size(); i++) {
         JPolygon p = polygons[i];
-        p.getVertices(&(vertices[i*4*3]));
+        p.getVertices(&(vertices[i * 4 * 3]));
     }
     return vertices;
 }
 
-float* JCube::getNormales() {
-    float *normales = new float[6*4*3];
-
-    for(int i = 0; i < polygons.size(); i++) {
+float *JCube::getNormales() {
+    for (int i = 0; i < polygons.size(); i++) {
         JPolygon p = polygons[i];
-        p.getNormals(&(normales[i*4*3]));
+        p.getNormals(&(normales[i * 4 * 3]));
     }
     return normales;
 }

@@ -5,7 +5,26 @@
 // Приложение, использующее простейший шейдер для освещения куба
 
 #include "MainGLWidget.h"
-#include "geometry/JCube.h"
+
+MainGLWidget::MainGLWidget(QWidget *parent) : QOpenGLWidget(parent), shaderProgram() {
+    cubes = new JCube[1];
+
+    QVector3D A;
+    QVector3D B;
+
+    A.setX(-1.0f);
+    A.setY(-1.0f);
+    A.setZ(-1.0f);
+    B.setX(1.0f);
+    B.setY(1.0f);
+    B.setZ(1.0f);
+
+    cubes[0].init(A,B);
+}
+
+MainGLWidget::~MainGLWidget() {
+    delete[] cubes;
+}
 
 void MainGLWidget::initializeGL() {
     // Включение сортировки по глубине
@@ -93,89 +112,6 @@ void MainGLWidget::paintGL() {
 
 // Подпрограмма для рисования куба
 void MainGLWidget::glCube() {
-    // Массив из 24 вершин (6 граней куба, каждая из 4 вершин)
-    static const float vertices[6 * 4][3] =
-            {{-1.0f, 1.0f,  1.0f},
-             {-1.0f, -1.0f, 1.0f},
-             {1.0f,  -1.0f, 1.0f},
-             {1.0f,  1.0f,  1.0f},  // Передняя грань (z =  1)
-             {1.0f,  1.0f,  -1.0f},
-             {1.0f,  -1.0f, -1.0f},
-             {-1.0f, -1.0f, -1.0f},
-             {-1.0f, 1.0f,  -1.0f},  // Задняя грань   (z = -1)
-             {1.0f,  1.0f,  -1.0f},
-             {-1.0f, 1.0f,  -1.0f},
-             {-1.0f, 1.0f,  1.0f},
-             {1.0f,  1.0f,  1.0f},  // Верхняя грань  (y =  1)
-             {1.0f,  -1.0f, 1.0f},
-             {-1.0f, -1.0f, 1.0f},
-             {-1.0f, -1.0f, -1.0f},
-             {1.0f,  -1.0f, -1.0f},  // Нижняя грань   (y = -1)
-             {1.0f,  -1.0f, 1.0f},
-             {1.0f,  -1.0f, -1.0f},
-             {1.0f,  1.0f,  -1.0f},
-             {1.0f,  1.0f,  1.0f},  // Правая грань   (x =  1)
-             {-1.0f, 1.0f,  1.0f},
-             {-1.0f, 1.0f,  -1.0f},
-             {-1.0f, -1.0f, -1.0f},
-             {-1.0f, -1.0f, 1.0f}}; // Левая грань    (x = -1)
-
-    // Массив нормалей каждой вершины из массива vertices
-    static const float normals[6 * 4][3] =
-            {{0.0f,  0.0f,  1.0f},
-             {0.0f,  0.0f,  1.0f},
-             {0.0f,  0.0f,  1.0f},
-             {0.0f,  0.0f,  1.0f},   // Вектора нормалей передней грани
-             {0.0f,  0.0f,  -1.0f},
-             {0.0f,  0.0f,  -1.0f},
-             {0.0f,  0.0f,  -1.0f},
-             {0.0f,  0.0f,  -1.0f},   // Вектора нормалей задней грани
-             {0.0f,  1.0f,  0.0f},
-             {0.0f,  1.0f,  0.0f},
-             {0.0f,  1.0f,  0.0f},
-             {0.0f,  1.0f,  0.0f},   // Вектора нормалей верхней грани
-             {0.0f,  -1.0f, 0.0f},
-             {0.0f,  -1.0f, 0.0f},
-             {0.0f,  -1.0f, 0.0f},
-             {0.0f,  -1.0f, 0.0f},   // Вектора нормалей нижней грани
-             {1.0f,  0.0f,  0.0f},
-             {1.0f,  0.0f,  0.0f},
-             {1.0f,  0.0f,  0.0f},
-             {1.0f,  0.0f,  0.0f},   // Вектора нормалей правой грани
-             {-1.0f, 0.0f,  0.0f},
-             {-1.0f, 0.0f,  0.0f},
-             {-1.0f, 0.0f,  0.0f},
-             {-1.0f, 0.0f,  0.0f}}; // Вектора нормалей левой грани
-
-    QVector3D vec1;
-    QVector3D vec2;
-
-    vec1.setX(-1.0f);
-    vec1.setY(-1.0f);
-    vec1.setZ(-1.0f);
-    vec2.setX(1.0f);
-    vec2.setY(1.0f);
-    vec2.setZ(1.0f);
-
-    JCube cube;
-    cube.init(vec1, vec2);
-
-    float *vert = cube.getVertices();
-
-    for (int i = 0; i < 6; i++) {
-        QString string;
-        for (int j = 0; j < 4; j++) {
-            string.append("{");
-            for (int k = 0; k < 3; k++) {
-                string.append(QString::number(vert[i*4*3 + j * 3 + k]));
-                string.append(",");
-            }
-            string.append("},");
-        }
-        qDebug() << string;
-    }
-
-    qDebug() << "";
 
     shaderProgram.bind();
 
@@ -192,17 +128,17 @@ void MainGLWidget::glCube() {
     shaderProgram.setUniformValue(modelViewMatrixLocation, modelViewMatrix);
 
     // Передаём массив вершин (координаты каждой вершины задаются тремя числами)
-    shaderProgram.setAttributeArray(vertexLocation, cube.getVertices(), 3);
+    shaderProgram.setAttributeArray(vertexLocation, cubes[0].getVertices(), 3);
 
     // Передаём массив векторов нормалей к вершинам vertices. Третий параметр означает, что каждый вектор состоит из трёх чисел
-    shaderProgram.setAttributeArray(normalLocation, cube.getNormales(), 3);
+    shaderProgram.setAttributeArray(normalLocation, cubes[0].getNormales(), 3);
 
     shaderProgram.enableAttributeArray(vertexLocation);
 
     shaderProgram.enableAttributeArray(normalLocation);
 
     // Рисование 6 граней куба, координаты и нормали которых заранее переданы в массивах. Всего массивы содержит 24 вершины
-    glDrawArrays(GL_QUADS, 0, 6*4);
+    glDrawArrays(GL_QUADS, 0, 6 * 4);
 
     shaderProgram.disableAttributeArray(vertexLocation);
 
@@ -238,6 +174,12 @@ void MainGLWidget::resetModelView() {
 
     // Первая операция - масштабирование объекта (уменьшим объект, чтобы он не занимал весь экран)
     modelViewMatrix.scale(0.3, 0.3, 0.3);
+
+    // Умножим матрицы проектирования и видовую матрицы
+    Q = projectMatrix * modelViewMatrix;
+
+    // Вычислим обратную матрицу
+    IQ = Q.inverted();
 }
 
 
@@ -274,8 +216,51 @@ void MainGLWidget::wheelEvent(QWheelEvent *w_event) {
 
 void MainGLWidget::mousePressEvent(QMouseEvent *m_event) {
     mousePosition = m_event->pos();
+
+    // Рассчитаем параметры селектирующего луча
+    JRay selection_Ray = selectionRay(mousePosition);
+
+    // Проверим, какие объекты лежат на пути селектирующего луча и вычислим их глубину (customDepth)
+    QVector3D R[2]; // Координаты точек пересечения
+    for (int i=0; i < 1;i++)
+    {
+        if (cubes[i].is_selecting = cubes[i].intersects(selection_Ray, R) > 0)
+        {
+            qDebug() << QString("Qube %1. Depth: Z1=%2, Z2=%3.\n").arg(i+1).arg(customDepth(R[0])).arg(customDepth(R[1]));
+        }
+    }
+
+    update();
 }
 
+float MainGLWidget::customDepth(QVector3D A)
+{
+    QMatrix4x4 M;
+    // Для определения глубины точки A нужно умножить видовую матрицу на однородные координаты точки A
+    glGetFloatv(GL_MODELVIEW_MATRIX,  M.data());
+    QVector4D R = (M * QVector4D(A.x(), A.y(), A.z(), 1));
+    return -R.z(); // Глубина - координата z найденной точки
+}
+
+JRay MainGLWidget::selectionRay(const QPoint& P) const
+{
+    // Вычислим координаты указателя мыши в экранной системе координат OpenGL
+    QPointF M = toOpenGLScreen(P);
+
+    // Вычислим параметры селектирующего луча
+    // Для этого нужно взять две точки, прямая через которые перпендикулярна экранной плоскости и пересекает её в точке P(x, y)
+    // Первая точка A должна находится на ближней плоскости отсечения (z = -1), вторая точка B - на дальней плоскости отсечения (z = 1)
+    QVector3D A = (IQ * QVector4D(M.x(), M.y(), -1, 1)).toVector3DAffine();
+    QVector3D B = (IQ * QVector4D(M.x(), M.y(),  1, 1)).toVector3DAffine();
+    return JRay(A, B);
+}
+
+QPointF MainGLWidget::toOpenGLScreen(QPoint pos) const
+{
+    float mx = -1.0f + 2.0f * (double) pos.x() / width();
+    float my =  1.0f - 2.0f * (double) pos.y() / height();
+    return QPointF(mx, my);
+}
 
 void MainGLWidget::keyPressEvent(QKeyEvent *event) {
     // Закрыть окно при нажатии клавиши Escape

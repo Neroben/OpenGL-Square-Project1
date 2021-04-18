@@ -19,6 +19,9 @@ public:
     // Выделен ли куб мышью?
     bool is_selecting;
 
+    float vertices[6*4*3];
+    float normales[6*4*3];
+
     ///
     /// \brief Массив из 6 граней параллелепипеда
     ///

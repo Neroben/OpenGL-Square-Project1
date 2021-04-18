@@ -10,13 +10,18 @@
 #include <QMouseEvent>
 #include <QOpenGLShaderProgram>
 #include <QtOpenGLWidgets/QOpenGLWidget>
+#include "geometry/JCube.h"
 
 class MainGLWidget : public QOpenGLWidget {
 public:
-    explicit MainGLWidget(QWidget *parent) : QOpenGLWidget(parent), shaderProgram(){}
+    MainGLWidget(QWidget *parent);
+    ~MainGLWidget();
 private:
     // Глубина объекта
     float zoffset = 3;
+
+    // Примитивы
+    JCube *cubes;
 
     // Матрица поворота
     QMatrix4x4 rotateMatrix; // Изначально матрица поворота равна единичной матрице
@@ -53,6 +58,12 @@ private:
     // Матрица проектирования
     QMatrix4x4 projectMatrix;
 
+    // Произведение видовой матрицы и матрицы проектирования
+    QMatrix4x4 Q;
+
+    // Матрица, обратная матрице Q
+    QMatrix4x4 IQ;
+
     // Сборщик шейдерных подпрограмм
     QOpenGLShaderProgram shaderProgram;
 
@@ -63,6 +74,12 @@ private:
     int modelViewMatrixLocation;
 
     void setLighting();
+
+    JRay selectionRay(const QPoint &P) const;
+
+    QPointF toOpenGLScreen(QPoint pos) const;
+
+    float customDepth(QVector3D A);
 };
 
 #endif //OPENGL_MAINGLWIDGET_H
