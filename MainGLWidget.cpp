@@ -131,10 +131,10 @@ void MainGLWidget::glCube() {
     }
 
     // Передаём массив вершин (координаты каждой вершины задаются тремя числами)
-    shaderProgram.setAttributeArray(vertexLocation, cubes[0].getVertices(), 3);
+    shaderProgram.setAttributeArray(vertexLocation, cubes[0].vertices);
 
     // Передаём массив векторов нормалей к вершинам vertices. Третий параметр означает, что каждый вектор состоит из трёх чисел
-    shaderProgram.setAttributeArray(normalLocation, cubes[0].getNormales(), 3);
+    shaderProgram.setAttributeArray(normalLocation, cubes[0].normales);
 
     shaderProgram.enableAttributeArray(vertexLocation);
 

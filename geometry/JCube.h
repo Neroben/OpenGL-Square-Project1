@@ -19,16 +19,13 @@ public:
     // Выделен ли куб мышью?
     bool is_selecting;
 
-    float *vertices = nullptr;
-    float *normales = nullptr;
-    float *colors = nullptr;
+    QVector3D vertices[24];
+    QVector3D normales[24];
 
     ///
     /// \brief Массив из 6 граней параллелепипеда
     ///
     QVector<JPolygon> polygons;
-
-    float *getVertices();
 
     JCube(){};
 
@@ -49,9 +46,6 @@ public:
     ///
     int intersects(const JRay &ray, QVector3D *R) const;
 
-    float *getNormales();
-
-    float *getColors();
 };
 
 

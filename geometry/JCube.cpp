@@ -5,9 +5,6 @@
 #include "JCube.h"
 
 JCube::~JCube() {
-    delete[] vertices;
-    delete[] normales;
-    delete[] colors;
 }
 
 void JCube::init(QVector3D A, QVector3D B) {
@@ -30,6 +27,16 @@ void JCube::init(QVector3D A, QVector3D B) {
     polygons.push_back(JPolygon(&V[5], &V[7], &V[3], &V[1]));
 
     is_selecting = false; // Куб не выделен
+
+    for(int i = 0; i < polygons.size(); i++) {
+        JPolygon p = polygons[i];
+        for(int j = 0; j < p.nVertices(); j++) {
+            vertices[i*4 + j] = p[j];
+        }
+        for(int j = 0; j < p.nVertices(); j++) {
+            normales[i*4 + j] = p.normal();
+        }
+    }
 }
 
 
@@ -43,34 +50,4 @@ int JCube::intersects(const JRay &ray, QVector3D *R) const {
             R[k++] = C;;
     }
     return k;
-}
-
-float *JCube::getVertices() {
-    if (vertices == nullptr) {
-        vertices = new float[6 * 4 * 3];
-        for (int i = 0; i < polygons.size(); i++) {
-            JPolygon p = polygons[i];
-            p.getVertices(&(vertices[i * 4 * 3]));
-        }
-    }
-    return vertices;
-}
-
-float *JCube::getNormales() {
-    if (normales == nullptr) {
-        normales = new float[6 * 4 * 3];
-        for (int i = 0; i < polygons.size(); i++) {
-            JPolygon p = polygons[i];
-            p.getNormals(&(normales[i * 4 * 3]));
-        }
-    }
-    return normales;
-}
-
-float *JCube::getColors() {
-    for (int i = 0; i < polygons.size(); i++) {
-        JPolygon p = polygons[i];
-        p.getNormals(&(normales[i * 4 * 3]));
-    }
-    return normales;
 }
