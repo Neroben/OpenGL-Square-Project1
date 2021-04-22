@@ -31,10 +31,10 @@ void JCube::init(QVector3D A, QVector3D B) {
     for(int i = 0; i < polygons.size(); i++) {
         JPolygon p = polygons[i];
         for(int j = 0; j < p.nVertices(); j++) {
-            vertices[i*4 + j] = p[j];
+            vertices.push_back(p[j]);
         }
         for(int j = 0; j < p.nVertices(); j++) {
-            normales[i*4 + j] = p.normal();
+            normales.push_back(p.normal());
         }
     }
 }

@@ -7,19 +7,35 @@
 #include "MainGLWidget.h"
 
 MainGLWidget::MainGLWidget(QWidget *parent) : QOpenGLWidget(parent), shaderProgram() {
-    cubes = new JCube[1];
+    initCubes();
+}
 
-    QVector3D A;
-    QVector3D B;
+void MainGLWidget::initCubes() {
+    cubes = new JCube[2];
 
-    A.setX(-1.0f);
-    A.setY(-1.0f);
-    A.setZ(-1.0f);
-    B.setX(1.0f);
-    B.setY(1.0f);
-    B.setZ(1.0f);
+    QVector3D A1;
+    QVector3D B1;
 
-    cubes[0].init(A,B);
+    A1.setX(-1.0f);
+    A1.setY(-1.0f);
+    A1.setZ(-1.0f);
+    B1.setX(-0.5f);
+    B1.setY(-0.5f);
+    B1.setZ(-0.5f);
+
+    cubes[0].init(A1, B1);
+
+    QVector3D A2;
+    QVector3D B2;
+
+    A2.setX(1.0f);
+    A2.setY(1.0f);
+    A2.setZ(1.0f);
+    B2.setX(0.5f);
+    B2.setY(0.5f);
+    B2.setZ(0.5f);
+
+    cubes[1].init(B2, A2);
 }
 
 MainGLWidget::~MainGLWidget() {
@@ -90,7 +106,8 @@ void MainGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Рисование куба
-    glCube();
+    glCube(&cubes[1]);
+    glCube(&cubes[0]);
 
     // Вывод на экран текста
     QPainter painter(this);
@@ -106,7 +123,7 @@ void MainGLWidget::paintGL() {
 
 
 // Подпрограмма для рисования куба
-void MainGLWidget::glCube() {
+void MainGLWidget::glCube(JCube *cube) {
 
     shaderProgram.bind();
 
@@ -122,7 +139,7 @@ void MainGLWidget::glCube() {
     // Видовая матрица для вершинного шейдера
     shaderProgram.setUniformValue(modelViewMatrixLocation, modelViewMatrix);
 
-    if(cubes[0].is_selecting) {
+    if (cubes[0].is_selecting || cubes[1].is_selecting) {
         // Цвет объекта
         shaderProgram.setUniformValue("objectColor", QVector3D(1.0, 0.5, 0.9));
     } else {
@@ -131,10 +148,10 @@ void MainGLWidget::glCube() {
     }
 
     // Передаём массив вершин (координаты каждой вершины задаются тремя числами)
-    shaderProgram.setAttributeArray(vertexLocation, cubes[0].vertices);
+    shaderProgram.setAttributeArray(vertexLocation, cube->vertices.data());
 
     // Передаём массив векторов нормалей к вершинам vertices. Третий параметр означает, что каждый вектор состоит из трёх чисел
-    shaderProgram.setAttributeArray(normalLocation, cubes[0].normales);
+    shaderProgram.setAttributeArray(normalLocation, cube->normales.data());
 
     shaderProgram.enableAttributeArray(vertexLocation);
 
@@ -149,7 +166,6 @@ void MainGLWidget::glCube() {
 
     shaderProgram.release();
 }
-
 
 void MainGLWidget::resetProjection() {
     // Инициализация единичной матрицы
@@ -225,28 +241,29 @@ void MainGLWidget::mousePressEvent(QMouseEvent *m_event) {
 
     // Проверим, какие объекты лежат на пути селектирующего луча и вычислим их глубину (customDepth)
     QVector3D R[2]; // Координаты точек пересечения
-    for (int i=0; i < 1;i++)
-    {
-        if (cubes[i].is_selecting = cubes[i].intersects(selection_Ray, R) > 0)
-        {
-            qDebug() << QString("Qube %1. Depth: Z1=%2, Z2=%3.\n").arg(i+1).arg(customDepth(R[0])).arg(customDepth(R[1]));
+    for (int i = 0; i < 1; i++) {
+        if (cubes[0].is_selecting = cubes[0].intersects(selection_Ray, R) > 0) {
+            qDebug() << QString("Qube 1. Depth: Z1=%2, Z2=%3.\n").arg(customDepth(R[0])).arg(
+                    customDepth(R[1]));
+        }
+        if (cubes[1].is_selecting = cubes[1].intersects(selection_Ray, R) > 0) {
+            qDebug() << QString("Qube 2. Depth: Z1=%2, Z2=%3.\n").arg(customDepth(R[0])).arg(
+                    customDepth(R[1]));
         }
     }
 
     update();
 }
 
-float MainGLWidget::customDepth(QVector3D A)
-{
+float MainGLWidget::customDepth(QVector3D A) {
     QMatrix4x4 M;
     // Для определения глубины точки A нужно умножить видовую матрицу на однородные координаты точки A
-    glGetFloatv(GL_MODELVIEW_MATRIX,  M.data());
+    glGetFloatv(GL_MODELVIEW_MATRIX, M.data());
     QVector4D R = (M * QVector4D(A.x(), A.y(), A.z(), 1));
     return -R.z(); // Глубина - координата z найденной точки
 }
 
-JRay MainGLWidget::selectionRay(const QPoint& P) const
-{
+JRay MainGLWidget::selectionRay(const QPoint &P) const {
     // Вычислим координаты указателя мыши в экранной системе координат OpenGL
     QPointF M = toOpenGLScreen(P);
 
@@ -254,14 +271,13 @@ JRay MainGLWidget::selectionRay(const QPoint& P) const
     // Для этого нужно взять две точки, прямая через которые перпендикулярна экранной плоскости и пересекает её в точке P(x, y)
     // Первая точка A должна находится на ближней плоскости отсечения (z = -1), вторая точка B - на дальней плоскости отсечения (z = 1)
     QVector3D A = (IQ * QVector4D(M.x(), M.y(), -1, 1)).toVector3DAffine();
-    QVector3D B = (IQ * QVector4D(M.x(), M.y(),  1, 1)).toVector3DAffine();
+    QVector3D B = (IQ * QVector4D(M.x(), M.y(), 1, 1)).toVector3DAffine();
     return JRay(A, B);
 }
 
-QPointF MainGLWidget::toOpenGLScreen(QPoint pos) const
-{
+QPointF MainGLWidget::toOpenGLScreen(QPoint pos) const {
     float mx = -1.0f + 2.0f * (double) pos.x() / width();
-    float my =  1.0f - 2.0f * (double) pos.y() / height();
+    float my = 1.0f - 2.0f * (double) pos.y() / height();
     return QPointF(mx, my);
 }
 

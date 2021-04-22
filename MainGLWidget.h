@@ -30,7 +30,7 @@ private:
     QPoint mousePosition;
 
     // Подпрограмма для рисования куба
-    void glCube();
+    void glCube(JCube* cube);
 
     // Процедура для изменения матрицы проектирования
     void resetProjection();
@@ -80,6 +80,8 @@ private:
     QPointF toOpenGLScreen(QPoint pos) const;
 
     float customDepth(QVector3D A);
+
+    void initCubes();
 };
 
 #endif //OPENGL_MAINGLWIDGET_H

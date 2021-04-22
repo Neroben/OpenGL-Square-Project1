@@ -19,8 +19,8 @@ public:
     // Выделен ли куб мышью?
     bool is_selecting;
 
-    QVector3D vertices[24];
-    QVector3D normales[24];
+    std::vector<QVector3D> vertices;
+    std::vector<QVector3D> normales;
 
     ///
     /// \brief Массив из 6 граней параллелепипеда
