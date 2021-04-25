@@ -35,9 +35,6 @@ MainGLWidget::~MainGLWidget() {
 }
 
 void MainGLWidget::initializeGL() {
-    // Включение сортировки по глубине
-    glEnable(GL_DEPTH_TEST);
-
     // Режим рисования только лицевых граней
     glEnable(GL_CULL_FACE);
 
@@ -91,6 +88,10 @@ void MainGLWidget::resizeGL(int nWidth, int nHeight) {
 
 // Внутри данной подпрограммы происходит рисование объектов
 void MainGLWidget::paintGL() {
+    glClearDepth(1.0);    // Разрешить очистку буфера глубины
+    glDepthFunc(GL_LESS);  // Тип теста глубины
+    glEnable(GL_DEPTH_TEST);// разрешить тест глубины
+
     // Очистка буфера глубины и буфера цвета
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
