@@ -2,11 +2,7 @@
 // Created by sdont on 13.04.2021.
 //
 
-#include <QMatrix4x4>
 #include "JCube.h"
-
-JCube::~JCube() {
-}
 
 void JCube::init(QVector3D A, QVector3D B) {
     // Задаём координаты 8 вершин
@@ -28,24 +24,15 @@ void JCube::init(QVector3D A, QVector3D B) {
     polygons.push_back(JPolygon(&V[5], &V[7], &V[3], &V[1]));
 
     is_selecting = false; // Куб не выделен
-    updatePoints();
 
-    modelViewMatrix.setToIdentity();
-}
-
-void JCube::updatePoints() {
-    vertices.clear();
-    normales.clear();
-    for (int i = 0; i < polygons.size(); i++) {
-        JPolygon p = polygons[i];
-        for (int j = 0; j < p.nVertices(); j++) {
-            vertices.push_back(p[j]);
-        }
-        for (int j = 0; j < p.nVertices(); j++) {
-            normales.push_back(p.normal());
-        }
+    // Инициализация массива вершин и нормалей
+    for (int i = 0; i < polygons.size(); i++)
+    {
+        polygons[i].getVertices((float*)(vertices + i*4));
+        polygons[i].getNormals((float*)(normales + i*4));
     }
 }
+
 
 int JCube::intersects(const JRay &ray, QVector3D *R) const {
     QVector3D C;
@@ -54,7 +41,7 @@ int JCube::intersects(const JRay &ray, QVector3D *R) const {
         // Если луч пересекает хотя бы одну грань, то считаем, что луч пересёк куб
         // В R записываем координаты точек пересечения с гранями
         if (polygons[i].intersects(ray, C))
-            R[k++] = C;;
+            R[k++] = C;
     }
     return k;
 }

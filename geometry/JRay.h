@@ -2,8 +2,8 @@
 // Created by sdont on 13.04.2021.
 //
 
-#ifndef OPENGL_JRAY_H
-#define OPENGL_JRAY_H
+#ifndef JRAY_H
+#define JRAY_H
 
 #include <QVector3D>
 
@@ -47,4 +47,4 @@ public:
 };
 
 
-#endif //OPENGL_JRAY_H
+#endif //JRAY_H

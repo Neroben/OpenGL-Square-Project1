@@ -2,10 +2,11 @@
 // Created by sdont on 13.04.2021.
 //
 
-#ifndef OPENGL_JCUBE_H
-#define OPENGL_JCUBE_H
+#ifndef JCUBE_H
+#define JCUBE_H
 
 #include <QVector3D>
+#include <QMatrix4x4>
 #include "JPolygon.h"
 
 class JCube {
@@ -19,8 +20,10 @@ public:
     // Выделен ли куб мышью?
     bool is_selecting;
 
-    QVector<QVector3D> vertices;
-    QVector<QVector3D> normales;
+    // Массивы для шейдеров
+    QVector3D vertices[24]; // Массив вершин
+
+    QVector3D normales[24]; // Массив нормалей
 
     ///
     /// \brief Массив из 6 граней параллелепипеда
@@ -36,15 +39,11 @@ public:
     // Матрица, обратная матрице Q
     QMatrix4x4 IQ;
 
-    float translateX = 0;
-
-    float translateY = 0;
-
-    float translateZ = 0;
+    QVector3D center;
 
     JCube(){};
 
-    ~JCube();
+    ~JCube(){};
 
     ///
     /// \brief init
@@ -61,10 +60,8 @@ public:
     ///
     int intersects(const JRay &ray, QVector3D *R) const;
 
-    void updatePoints();
-
     void updateDepth(QMatrix4x4 projectMatrix);
 };
 
 
-#endif //OPENGL_JCUBE_H
+#endif //JCUBE_H

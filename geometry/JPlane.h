@@ -2,8 +2,8 @@
 // Created by sdont on 13.04.2021.
 //
 
-#ifndef OPENGL_JPLANE_H
-#define OPENGL_JPLANE_H
+#ifndef JPLANE_H
+#define JPLANE_H
 
 #include <QVector3D>
 #include "JRay.h"
@@ -36,4 +36,4 @@ public:
 };
 
 
-#endif //OPENGL_JPLANE_H
+#endif //JPLANE_H

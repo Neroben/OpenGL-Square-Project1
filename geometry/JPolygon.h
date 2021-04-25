@@ -2,8 +2,8 @@
 // Created by sdont on 13.04.2021.
 //
 
-#ifndef OPENGL_JPOLYGON_H
-#define OPENGL_JPOLYGON_H
+#ifndef JPOLYGON_H
+#define JPOLYGON_H
 
 #include <QVector3D>
 #include <QVector>
@@ -13,12 +13,10 @@
 ///
 /// \brief Класс JPolygon - многоугольник
 ///
-class JPolygon {
+class JPolygon : QVector<QVector3D*> {
 
     // Уравнение плоскости, на которой лежит многоугольник
     JPlane plane;
-
-    QVector<QVector3D*> points;
 
     // Процедура вычисляет координаты вектора нормали по первым трём точкам
     void initNormal();
@@ -73,8 +71,11 @@ public:
     ///
     QVector3D normal() const;
 
-    void translate(float x, float y, float z);
+    void getVertices(float* vertices) const;
+
+    void getNormals(float* normalArr) const;
+
 };
 
 
-#endif //OPENGL_JPOLYGON_H
+#endif //JPOLYGON_H

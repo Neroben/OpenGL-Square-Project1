@@ -2,7 +2,9 @@
 // Created by sdont on 13.04.2021.
 //
 
+#include <math.h>
 #include "JPlane.h"
+
 
 JPlane::JPlane()
 {

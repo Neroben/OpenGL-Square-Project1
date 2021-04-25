@@ -2,26 +2,29 @@
 // Created by sdont on 05.03.2021.
 //
 
-#ifndef OPENGL_MAINGLWIDGET_H
-#define OPENGL_MAINGLWIDGET_H
+#ifndef MAINGLWIDGET_H
+#define MAINGLWIDGET_H
 
 #include <QOpenGLFunctions>
 #include <QPainter>
 #include <QMouseEvent>
 #include <QOpenGLShaderProgram>
-#include <QtOpenGLWidgets/QOpenGLWidget>
+#include <QOpenGLWidget>
 #include "geometry/JCube.h"
 
 class MainGLWidget : public QOpenGLWidget {
 public:
     MainGLWidget(QWidget *parent);
+
     ~MainGLWidget();
+
 private:
+
     // Глубина объекта
     float zoffset = 3;
 
-    // Примитивы
-    QVector<JCube*> cubes;
+    // Кубы
+    JCube cubes[2];
 
     // Матрица поворота
     QMatrix4x4 rotateMatrix; // Изначально матрица поворота равна единичной матрице
@@ -30,10 +33,13 @@ private:
     QPoint mousePosition;
 
     // Подпрограмма для рисования куба
-    void glCube(JCube* cube);
+    void draw(const JCube& cube);
 
     // Процедура для изменения матрицы проектирования
     void resetProjection();
+
+    // Процедура для изменения видовой матрицы
+    void resetModelViewCube(JCube *cube);
 
     // Процедура для изменения матрицы поворота
     static void changeRotateMatrix(QMatrix4x4& rotate_matrix, float dx, float dy);
@@ -67,11 +73,13 @@ private:
 
     QPointF toOpenGLScreen(QPoint pos) const;
 
-    float customDepth(QVector3D A);
+    float customDepth(const QVector3D& A, QMatrix4x4 modelViewMatrix);
+
+    QString depthInfo;
 
     void initCubes();
 
-    void resetModelViewCube(JCube *cube);
+    void resetModelView();
 };
 
-#endif //OPENGL_MAINGLWIDGET_H
+#endif //MAINGLWIDGET_H
