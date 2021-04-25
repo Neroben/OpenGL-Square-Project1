@@ -94,6 +94,7 @@ void MainGLWidget::resizeGL(int nWidth, int nHeight) {
 
 // Внутри данной подпрограммы происходит рисование объектов
 void MainGLWidget::paintGL() {
+    glEnable(GL_DEPTH_TEST);
 
     // Очистка буфера глубины и буфера цвета
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
