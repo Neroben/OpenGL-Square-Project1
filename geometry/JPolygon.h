@@ -13,10 +13,12 @@
 ///
 /// \brief Класс JPolygon - многоугольник
 ///
-class JPolygon : QVector<QVector3D*> {
+class JPolygon {
 
     // Уравнение плоскости, на которой лежит многоугольник
     JPlane plane;
+
+    QVector<QVector3D*> points;
 
     // Процедура вычисляет координаты вектора нормали по первым трём точкам
     void initNormal();
@@ -71,10 +73,7 @@ public:
     ///
     QVector3D normal() const;
 
-    void getVertices(float* vertices);
-
-    void getNormals(float* normalArr);
-
+    void translate(float x, float y, float z);
 };
 
 

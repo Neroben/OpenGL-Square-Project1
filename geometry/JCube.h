@@ -19,13 +19,28 @@ public:
     // Выделен ли куб мышью?
     bool is_selecting;
 
-    std::vector<QVector3D> vertices;
-    std::vector<QVector3D> normales;
+    QVector<QVector3D> vertices;
+    QVector<QVector3D> normales;
 
     ///
     /// \brief Массив из 6 граней параллелепипеда
     ///
     QVector<JPolygon> polygons;
+
+    // Матрица видового преобразования
+    QMatrix4x4 modelViewMatrix;
+
+    // Произведение видовой матрицы и матрицы проектирования
+    QMatrix4x4 Q;
+
+    // Матрица, обратная матрице Q
+    QMatrix4x4 IQ;
+
+    float translateX = 0;
+
+    float translateY = 0;
+
+    float translateZ = 0;
 
     JCube(){};
 
@@ -46,6 +61,17 @@ public:
     ///
     int intersects(const JRay &ray, QVector3D *R) const;
 
+    void translate(float x, float y, float z);
+
+    void updatePoints();
+
+    void rotate(float dx, float dy);
+
+    void scale(float x, float y, float z);
+
+    void initDepth(QMatrix4x4 projectMatrix);
+
+    void resetModelView();
 };
 
 

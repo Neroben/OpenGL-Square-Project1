@@ -21,7 +21,7 @@ private:
     float zoffset = 3;
 
     // Примитивы
-    JCube *cubes;
+    QVector<JCube> cubes;
 
     // Матрица поворота
     QMatrix4x4 rotateMatrix; // Изначально матрица поворота равна единичной матрице
@@ -34,9 +34,6 @@ private:
 
     // Процедура для изменения матрицы проектирования
     void resetProjection();
-
-    // Процедура для изменения видовой матрицы
-    void resetModelView();
 
     // Процедура для изменения матрицы поворота
     static void changeRotateMatrix(QMatrix4x4& rotate_matrix, float dx, float dy);
@@ -52,17 +49,8 @@ private:
     void keyPressEvent(QKeyEvent* key_event);
     void mousePressEvent(QMouseEvent* m_event);
 
-    // Матрица видового преобразования
-    QMatrix4x4 modelViewMatrix;
-
     // Матрица проектирования
     QMatrix4x4 projectMatrix;
-
-    // Произведение видовой матрицы и матрицы проектирования
-    QMatrix4x4 Q;
-
-    // Матрица, обратная матрице Q
-    QMatrix4x4 IQ;
 
     // Сборщик шейдерных подпрограмм
     QOpenGLShaderProgram shaderProgram;
@@ -75,13 +63,15 @@ private:
 
     void setLighting();
 
-    JRay selectionRay(const QPoint &P) const;
+    JRay selectionRay(const QPoint &P, JCube *cube) const;
 
     QPointF toOpenGLScreen(QPoint pos) const;
 
     float customDepth(QVector3D A);
 
     void initCubes();
+
+    void resetModelView();
 };
 
 #endif //OPENGL_MAINGLWIDGET_H

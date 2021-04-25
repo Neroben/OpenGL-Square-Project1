@@ -2,6 +2,7 @@
 // Created by sdont on 13.04.2021.
 //
 
+#include <QMatrix4x4>
 #include "JCube.h"
 
 JCube::~JCube() {
@@ -27,18 +28,24 @@ void JCube::init(QVector3D A, QVector3D B) {
     polygons.push_back(JPolygon(&V[5], &V[7], &V[3], &V[1]));
 
     is_selecting = false; // Куб не выделен
+    updatePoints();
 
-    for(int i = 0; i < polygons.size(); i++) {
+    modelViewMatrix.setToIdentity();
+}
+
+void JCube::updatePoints() {
+    vertices.clear();
+    normales.clear();
+    for (int i = 0; i < polygons.size(); i++) {
         JPolygon p = polygons[i];
-        for(int j = 0; j < p.nVertices(); j++) {
+        for (int j = 0; j < p.nVertices(); j++) {
             vertices.push_back(p[j]);
         }
-        for(int j = 0; j < p.nVertices(); j++) {
+        for (int j = 0; j < p.nVertices(); j++) {
             normales.push_back(p.normal());
         }
     }
 }
-
 
 int JCube::intersects(const JRay &ray, QVector3D *R) const {
     QVector3D C;
@@ -50,4 +57,34 @@ int JCube::intersects(const JRay &ray, QVector3D *R) const {
             R[k++] = C;;
     }
     return k;
+}
+
+void JCube::translate(float x, float y, float z) {
+    modelViewMatrix.translate(x, y, z);
+}
+
+void JCube::rotate(float dx, float dy) {
+    // Матрица поворота
+    QMatrix4x4 rotateMatrix; // Изначально матрица поворота равна единичной матрице
+    rotateMatrix.rotate(-dx, 1, 0);
+    rotateMatrix.rotate(-dy, 0, 1);
+
+    modelViewMatrix *= rotateMatrix.transposed();
+}
+
+void JCube::scale(float x, float y, float z) {
+    modelViewMatrix.scale(x, y, z);
+}
+
+void JCube::resetModelView() {
+    modelViewMatrix.setToIdentity();
+}
+
+//Инициализация переменных для вычисление глубины
+void JCube::initDepth(QMatrix4x4 projectMatrix) {
+    // Умножим матрицы проектирования и видовую матрицы
+    Q = projectMatrix * modelViewMatrix;
+
+    // Вычислим обратную матрицу
+    IQ = Q.inverted();
 }
