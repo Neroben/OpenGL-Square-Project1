@@ -11,17 +11,17 @@ MainGLWidget::MainGLWidget(QWidget *parent) : QOpenGLWidget(parent), shaderProgr
 }
 
 void MainGLWidget::initCubes() {
-    JCube cube1;
-    JCube cube2;
+    JCube *cube1 = new JCube();
+    JCube *cube2 = new JCube();
 
     QVector3D A(-1.0f, -1.0f, -1.0f);
     QVector3D B(1.0f, 1.0f, 1.0f);
 
-    cube1.init(A, B);
-    cube1.translateX = -1.0f;
+    cube1->init(A, B);
+    cube1->translateX = -1.0f;
 
-    cube2.init(A, B);
-    cube2.translateX = 1.0f;
+    cube2->init(A, B);
+    cube2->translateX = 1.0f;
 
 
     cubes.push_back(cube1);
@@ -29,6 +29,9 @@ void MainGLWidget::initCubes() {
 }
 
 MainGLWidget::~MainGLWidget() {
+    for (int i = 0; i < cubes.size(); i++) {
+        delete cubes[i];
+    }
 }
 
 void MainGLWidget::initializeGL() {
@@ -92,8 +95,8 @@ void MainGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Рисование куба
-    glCube(&cubes[0]);
-    glCube(&cubes[1]);
+    glCube(cubes[0]);
+    glCube(cubes[1]);
 
     // Вывод на экран текста
     QPainter painter(this);
@@ -125,7 +128,7 @@ void MainGLWidget::glCube(JCube *cube) {
     // Видовая матрица для вершинного шейдера
     shaderProgram.setUniformValue(modelViewMatrixLocation, cube->modelViewMatrix);
 
-    if (cubes[0].is_selecting || cubes[1].is_selecting) {
+    if (cube->is_selecting) {
         // Цвет объекта
         shaderProgram.setUniformValue("objectColor", QVector3D(1.0, 0.5, 0.9));
     } else {
@@ -163,29 +166,26 @@ void MainGLWidget::resetProjection() {
 
 
 // Процедура для изменения видовой матрицы
-void MainGLWidget::resetModelView() {
+void MainGLWidget::resetModelViewCube(JCube *cube) {
+    cube->modelViewMatrix.setToIdentity();
+    // Далее аффинные преобразования записаны в обратном порядке
 
-    for (int i = 0; i < cubes.size(); i++) {
-        cubes[i].resetModelView();
-        // Далее аффинные преобразования записаны в обратном порядке
+    // Третья операция - перенос объекта вдоль оси z (например, вглубь экрана)
+    // Умножим видовую матрицу на матрицу переноса
+    cube->modelViewMatrix.translate(0, 0, -zoffset);
 
-        // Третья операция - перенос объекта вдоль оси z (например, вглубь экрана)
-        // Умножим видовую матрицу на матрицу переноса
-        cubes[i].translate(0, 0, -zoffset);
+    // Вторая операция - поворот объекта
+    // Умножим видовую матрицу на матрицу поворота
+    cube->modelViewMatrix *= rotateMatrix.transposed();
 
-        // Вторая операция - поворот объекта
-        // Умножим видовую матрицу на матрицу поворота
-        cubes[i].modelViewMatrix *= rotateMatrix.transposed();
+    // Третья операция - перенос объекта вдоль оси z (например, вглубь экрана)
+    // Умножим видовую матрицу на матрицу переноса
+    cube->modelViewMatrix.translate(cube->translateX, cube->translateY, 0);
 
-        // Третья операция - перенос объекта вдоль оси z (например, вглубь экрана)
-        // Умножим видовую матрицу на матрицу переноса
-        cubes[i].translate( cubes[i].translateX, cubes[i].translateY, 0);
+    // Первая операция - масштабирование объекта (уменьшим объект, чтобы он не занимал весь экран)
+    cube->modelViewMatrix.scale(0.3f, 0.3f, 0.3f);
 
-        // Первая операция - масштабирование объекта (уменьшим объект, чтобы он не занимал весь экран)
-        cubes[i].scale(0.3f, 0.3f, 0.3f);
-
-        cubes[i].initDepth(projectMatrix);
-    }
+    cube->updateDepth(projectMatrix);
 }
 
 
@@ -198,7 +198,9 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent *m_event) {
     // Сохраним текущую позицию мыши
     mousePosition = m_event->pos();
     // Обновим матрицу аффинных преобразований
-    resetModelView();
+    for (int i = 0; i < cubes.size(); i++) {
+        resetModelViewCube(cubes[i]);
+    }
     update(); // Перерисовать окно
 }
 
@@ -215,7 +217,9 @@ void MainGLWidget::changeRotateMatrix(QMatrix4x4 &R, float dx, float dy) {
 void MainGLWidget::wheelEvent(QWheelEvent *w_event) {
     // При прокрутке колеса мыши изменяем глубину объекта
     zoffset -= (float) (w_event->angleDelta().x() + w_event->angleDelta().y()) / 500.0f;
-    resetModelView();
+    for (int i = 0; i < cubes.size(); i++) {
+        resetModelViewCube(cubes[i]);
+    }
     update(); // Перерисовать окно
 }
 
@@ -227,8 +231,8 @@ void MainGLWidget::mousePressEvent(QMouseEvent *m_event) {
     QVector3D R[2]; // Координаты точек пересечения
     for (int i = 0; i < cubes.size(); i++) {
         // Рассчитаем параметры селектирующего луча
-        JRay selection_ray = selectionRay(mousePosition, &cubes[i]);
-        if (cubes[i].is_selecting = cubes[i].intersects(selection_ray, R) > 0) {
+        JRay selection_ray = selectionRay(mousePosition, cubes[i]);
+        if (cubes[i]->is_selecting = cubes[i]->intersects(selection_ray, R) > 0) {
             qDebug() << QString("Qube %1. Depth: Z1=%2, Z2=%3.\n").arg(i + 1).arg(customDepth(R[0]))
                     .arg(customDepth(R[1]));
         }

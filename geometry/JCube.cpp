@@ -59,29 +59,8 @@ int JCube::intersects(const JRay &ray, QVector3D *R) const {
     return k;
 }
 
-void JCube::translate(float x, float y, float z) {
-    modelViewMatrix.translate(x, y, z);
-}
-
-void JCube::rotate(float dx, float dy) {
-    // Матрица поворота
-    QMatrix4x4 rotateMatrix; // Изначально матрица поворота равна единичной матрице
-    rotateMatrix.rotate(-dx, 1, 0);
-    rotateMatrix.rotate(-dy, 0, 1);
-
-    modelViewMatrix *= rotateMatrix.transposed();
-}
-
-void JCube::scale(float x, float y, float z) {
-    modelViewMatrix.scale(x, y, z);
-}
-
-void JCube::resetModelView() {
-    modelViewMatrix.setToIdentity();
-}
-
 //Инициализация переменных для вычисление глубины
-void JCube::initDepth(QMatrix4x4 projectMatrix) {
+void JCube::updateDepth(QMatrix4x4 projectMatrix) {
     // Умножим матрицы проектирования и видовую матрицы
     Q = projectMatrix * modelViewMatrix;
 

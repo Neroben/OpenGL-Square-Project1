@@ -61,17 +61,9 @@ public:
     ///
     int intersects(const JRay &ray, QVector3D *R) const;
 
-    void translate(float x, float y, float z);
-
     void updatePoints();
 
-    void rotate(float dx, float dy);
-
-    void scale(float x, float y, float z);
-
-    void initDepth(QMatrix4x4 projectMatrix);
-
-    void resetModelView();
+    void updateDepth(QMatrix4x4 projectMatrix);
 };
 
 
