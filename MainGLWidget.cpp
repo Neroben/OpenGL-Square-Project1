@@ -11,35 +11,23 @@ MainGLWidget::MainGLWidget(QWidget *parent) : QOpenGLWidget(parent), shaderProgr
 }
 
 void MainGLWidget::initCubes() {
-    cubes = new JCube[2];
 
-    QVector3D A1;
-    QVector3D B1;
+    QVector3D A(-1.0f,-1.0f,-1.0f);
+    QVector3D B(1.0f,1.0f,1.0f);
 
-    A1.setX(-1.0f);
-    A1.setY(-1.0f);
-    A1.setZ(-1.0f);
-    B1.setX(-0.5f);
-    B1.setY(-0.5f);
-    B1.setZ(-0.5f);
+    JCube *cube1 = new JCube();
+    cube1->init(A, B);
+    JCube *cube2 = new JCube();
+    cube2->init(A, B);
 
-    cubes[0].init(A1, B1);
-
-    QVector3D A2;
-    QVector3D B2;
-
-    A2.setX(1.0f);
-    A2.setY(1.0f);
-    A2.setZ(1.0f);
-    B2.setX(0.5f);
-    B2.setY(0.5f);
-    B2.setZ(0.5f);
-
-    cubes[1].init(B2, A2);
+    cubes.push_back(cube1);
+    cubes.push_back(cube2);
 }
 
 MainGLWidget::~MainGLWidget() {
-    delete[] cubes;
+    for(int i = 0; i < cubes.size(); i++) {
+        delete cubes[i];
+    }
 }
 
 void MainGLWidget::initializeGL() {
@@ -106,8 +94,8 @@ void MainGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Рисование куба
-    glCube(&cubes[1]);
-    glCube(&cubes[0]);
+    glCube(cubes[0]);
+    glCube(cubes[1]);
 
     // Вывод на экран текста
     QPainter painter(this);
@@ -139,7 +127,7 @@ void MainGLWidget::glCube(JCube *cube) {
     // Видовая матрица для вершинного шейдера
     shaderProgram.setUniformValue(modelViewMatrixLocation, modelViewMatrix);
 
-    if (cubes[0].is_selecting || cubes[1].is_selecting) {
+    if (cubes[0]->is_selecting || cubes[1]->is_selecting) {
         // Цвет объекта
         shaderProgram.setUniformValue("objectColor", QVector3D(1.0, 0.5, 0.9));
     } else {
@@ -242,11 +230,11 @@ void MainGLWidget::mousePressEvent(QMouseEvent *m_event) {
     // Проверим, какие объекты лежат на пути селектирующего луча и вычислим их глубину (customDepth)
     QVector3D R[2]; // Координаты точек пересечения
     for (int i = 0; i < 1; i++) {
-        if (cubes[0].is_selecting = cubes[0].intersects(selection_Ray, R) > 0) {
+        if (cubes[0]->is_selecting = cubes[0]->intersects(selection_Ray, R) > 0) {
             qDebug() << QString("Qube 1. Depth: Z1=%2, Z2=%3.\n").arg(customDepth(R[0])).arg(
                     customDepth(R[1]));
         }
-        if (cubes[1].is_selecting = cubes[1].intersects(selection_Ray, R) > 0) {
+        if (cubes[1]->is_selecting = cubes[1]->intersects(selection_Ray, R) > 0) {
             qDebug() << QString("Qube 2. Depth: Z1=%2, Z2=%3.\n").arg(customDepth(R[0])).arg(
                     customDepth(R[1]));
         }

@@ -21,7 +21,7 @@ private:
     float zoffset = 3;
 
     // Примитивы
-    JCube *cubes;
+    QVector <JCube*> cubes;
 
     // Матрица поворота
     QMatrix4x4 rotateMatrix; // Изначально матрица поворота равна единичной матрице
