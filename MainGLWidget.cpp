@@ -7,6 +7,8 @@
 #include "MainGLWidget.h"
 
 MainGLWidget::MainGLWidget(QWidget *parent) : QOpenGLWidget(parent), shaderProgram() {
+    setWindowTitle("Трёхмерная графика. Селектирование куба");
+    //setWindowState(Qt::WindowFullScreen); // Разворачиваем приложение на весь экран
     initCubes();
 }
 
@@ -35,8 +37,11 @@ MainGLWidget::~MainGLWidget() {
 }
 
 void MainGLWidget::initializeGL() {
+    glClearDepth(1.0);    // Разрешить очистку буфера глубины
+    glDepthFunc(GL_LESS);  // Тип теста глубины
+
     // Режим рисования только лицевых граней
-    glEnable(GL_CULL_FACE);
+//    glEnable(GL_CULL_FACE);
 
     initShader();
 }
@@ -88,8 +93,6 @@ void MainGLWidget::resizeGL(int nWidth, int nHeight) {
 
 // Внутри данной подпрограммы происходит рисование объектов
 void MainGLWidget::paintGL() {
-    glClearDepth(1.0);    // Разрешить очистку буфера глубины
-    glDepthFunc(GL_LESS);  // Тип теста глубины
     glEnable(GL_DEPTH_TEST);// разрешить тест глубины
 
     // Очистка буфера глубины и буфера цвета
