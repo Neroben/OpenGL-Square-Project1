@@ -11,6 +11,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLWidget>
 #include "geometry/JCube.h"
+#include "geometry/JSphere.h"
 
 class MainGLWidget : public QOpenGLWidget {
 public:
@@ -26,6 +27,8 @@ private:
     // Кубы
     JCube cubes[2];
 
+    JSphere sphere;
+
     // Матрица поворота
     QMatrix4x4 rotateMatrix; // Изначально матрица поворота равна единичной матрице
 
@@ -33,7 +36,7 @@ private:
     QPoint mousePosition;
 
     // Подпрограмма для рисования куба
-    void draw(const JCube& cube);
+    void drawCube(const JCube& cube);
 
     // Процедура для изменения матрицы проектирования
     void resetProjection();
@@ -80,6 +83,10 @@ private:
     void initCubes();
 
     void resetModelView();
+
+    void drawSphere(const JSphere &sphere);
+
+    void resetModelViewSphere(JSphere *cube);
 };
 
 #endif //MAINGLWIDGET_H

@@ -5,6 +5,7 @@
 // Приложение, использующее простейший шейдер для освещения куба
 
 #include "MainGLWidget.h"
+#include <gl/glu.h>
 
 MainGLWidget::~MainGLWidget() {
 
@@ -14,6 +15,8 @@ MainGLWidget::MainGLWidget(QWidget *parent) : QOpenGLWidget(parent), shaderProgr
     setWindowTitle("Трёхмерная графика. Селектирование куба");
     //setWindowState(Qt::WindowFullScreen); // Разворачиваем приложение на весь экран
     initCubes();
+    sphere = JSphere();
+    sphere.init();
 }
 
 void MainGLWidget::initCubes() {
@@ -25,7 +28,6 @@ void MainGLWidget::initCubes() {
     cubes[0].center = QVector3D(-1.0f, 0.0f, 0.0f);
     cubes[1].init(A, B);
     cubes[1].center = QVector3D(1.0f, 0.0f, 0.0f);
-
 }
 
 void MainGLWidget::initializeGL() {
@@ -106,8 +108,10 @@ void MainGLWidget::paintGL() {
 
     for(int i = 0; i < 2; i++) {
         // Рисование куба
-        draw(cubes[i]);
+        drawCube(cubes[i]);
     }
+
+    drawSphere(sphere);
 
     shaderProgram.release();
 
@@ -126,7 +130,7 @@ void MainGLWidget::paintGL() {
 
 
 // Подпрограмма для рисования куба
-void MainGLWidget::draw(const JCube &cube) {
+void MainGLWidget::drawCube(const JCube &cube) {
 
     // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
     shaderProgram.setUniformValue(matrixLocation, projectMatrix * cube.modelViewMatrix);
@@ -165,6 +169,40 @@ void MainGLWidget::draw(const JCube &cube) {
 
 }
 
+// Подпрограмма для рисования куба
+void MainGLWidget::drawSphere(const JSphere &sphere) {
+
+    // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
+    shaderProgram.setUniformValue(matrixLocation, projectMatrix * sphere.modelViewMatrix);
+
+    // Матрица, используемая для пересчёта векторов нормалей в вершинном шейдере
+    shaderProgram.setUniformValue(normalMatrixLocation, sphere.modelViewMatrix.normalMatrix());
+
+    // Видовая матрица для вершинного шейдера
+    shaderProgram.setUniformValue(modelViewMatrixLocation, sphere.modelViewMatrix);
+
+    // Цвет куба
+    QVector3D cubeColor;
+    if (sphere.is_selecting)
+        cubeColor = QVector3D(1.0, 0.5, 0.3);
+    else
+        cubeColor = QVector3D(0.0, 0.5, 0.9);
+
+    shaderProgram.setUniformValue("objectColor", cubeColor);
+
+    // Передаём массив вершин (координаты каждой вершины задаются тремя числами)
+    shaderProgram.setAttributeArray(vertexLocation, sphere.vertices.data());
+
+    shaderProgram.enableAttributeArray(vertexLocation);
+    shaderProgram.enableAttributeArray(normalLocation);
+
+    glDrawArrays(GL_TRIANGLES, 0, sphere.sectorCount * (sphere.stackCount - 2) * 3 * 3);
+
+    shaderProgram.disableAttributeArray(vertexLocation);
+
+    shaderProgram.disableAttributeArray(normalLocation);
+
+}
 
 void MainGLWidget::resetProjection() {
     // Инициализация единичной матрицы
@@ -178,6 +216,32 @@ void MainGLWidget::resetModelView() {
     for (int i = 0; i < 2; i++) {
         resetModelViewCube(&cubes[i]);
     }
+    resetModelViewSphere(&sphere);
+}
+
+// Процедура для изменения видовой матрицы
+void MainGLWidget::resetModelViewSphere(JSphere *sphere) {
+    // Инициализация видовой матрицы как единичной
+    sphere->modelViewMatrix.setToIdentity();
+
+    // Далее аффинные преобразования записаны в обратном порядке
+
+    // Четвертая операция - перенос объекта вдоль оси z (например, вглубь экрана)
+    // Умножим видовую матрицу на матрицу переноса
+    sphere->modelViewMatrix.translate(0, 0, -zoffset);
+
+    // Третья операция - поворот объекта
+    // Умножим видовую матрицу на матрицу поворота
+    sphere->modelViewMatrix *= rotateMatrix.transposed();
+
+    // Вторая операция - перенос объекта на его место
+    // Умножим видовую матрицу на матрицу переноса
+//    sphere->modelViewMatrix.translate(sphere->center());
+
+    // Первая операция - масштабирование объекта (уменьшим объект, чтобы он не занимал весь экран)
+    sphere->modelViewMatrix.scale(0.3f, 0.3f, 0.3f);
+
+    sphere->updateDepth(projectMatrix);
 }
 
 // Процедура для изменения видовой матрицы
