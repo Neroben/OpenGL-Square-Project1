@@ -21,8 +21,8 @@ public:
 
     // Радиус сферы
     float radius = 1;
-    int sectorCount = 10;   //секторов на круге xy
-    int stackCount = 10;    //секторов на круге xz
+    int sectorCount = 25;   //секторов на круге xy
+    int stackCount = 25;    //секторов на круге xz
     std::vector<float> texCoords;
 
     std::vector<unsigned int> lineIndices;
@@ -38,9 +38,11 @@ public:
 
     QVector<QVector3D> vertices;
 
+    QVector<QVector3D> normals;
+
     std::vector<QVector3D> points;
-    std::vector<float> normals;
-    std::vector<unsigned int> indices;
+
+
 
     // Флаг, определяющий, выделена ли сфера мышкой
     bool is_selecting;
@@ -66,11 +68,7 @@ public:
 
     void buildVerticesSmooth();
 
-    void addNormal(float nx, float ny, float nz);
-
     void addTexCoord(float s, float t);
-
-    void addIndices(unsigned int i1, unsigned int i2, unsigned int i3);
 };
 
 

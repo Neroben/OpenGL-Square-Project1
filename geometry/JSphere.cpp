@@ -15,9 +15,7 @@ void JSphere::init() {
 
 void JSphere::clearArrays() {
     std::vector<QVector3D>().swap(points);
-    std::vector<float>().swap(normals);
     std::vector<float>().swap(texCoords);
-    std::vector<unsigned int>().swap(indices);
     std::vector<unsigned int>().swap(lineIndices);
 }
 
@@ -50,12 +48,6 @@ void JSphere::buildVerticesSmooth() {
             y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
             addPoints(x, y, z);
 
-            // normalized vertex normal
-            nx = x * lengthInv;
-            ny = y * lengthInv;
-            nz = z * lengthInv;
-            addNormal(nx, ny, nz);
-
             // vertex tex coord between [0, 1]
             s = (float) j / sectorCount;
             t = (float) i / stackCount;
@@ -65,9 +57,9 @@ void JSphere::buildVerticesSmooth() {
 
     unsigned int k1, k2;
     for (int i = 0; i < stackCount; ++i) {
-        k1 = i * sectorCount + 1;
-        k2 = k1 + sectorCount;
-        for (int j = 0; j < sectorCount; j++, k1++, k2++) {
+        k1 = i * (sectorCount + 1);
+        k2 = k1 + sectorCount + 1;
+        for (int j = 0; j < sectorCount; ++j, ++k1, ++k2) {
             if(i != 0) {
                 polygons.push_back(JPolygon(&points[k1], &points[k2], &points[k1 + 1]));
             }
@@ -83,6 +75,13 @@ void JSphere::buildVerticesSmooth() {
         vertices.push_back(a[0]);
         vertices.push_back(a[1]);
         vertices.push_back(a[2]);
+
+        QVector3D b[3];
+        polygons[i].getNormals((float *) &b);
+        normals.push_back(b[0]);
+        normals.push_back(b[1]);
+        normals.push_back(b[2]);
+
     }
 }
 
@@ -90,22 +89,11 @@ void JSphere::addPoints(float x, float y, float z) {
     points.emplace_back(x, y, z);
 }
 
-void JSphere::addNormal(float nx, float ny, float nz) {
-    normals.push_back(nx);
-    normals.push_back(ny);
-    normals.push_back(nz);
-}
-
 void JSphere::addTexCoord(float s, float t) {
     texCoords.push_back(s);
     texCoords.push_back(t);
 }
 
-void JSphere::addIndices(unsigned int i1, unsigned int i2, unsigned int i3) {
-    indices.push_back(i1);
-    indices.push_back(i2);
-    indices.push_back(i3);
-}
 
 //Инициализация переменных для вычисление глубины
 void JSphere::updateDepth(QMatrix4x4 projectMatrix) {

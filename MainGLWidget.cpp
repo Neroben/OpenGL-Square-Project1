@@ -193,10 +193,14 @@ void MainGLWidget::drawSphere(const JSphere &sphere) {
     // Передаём массив вершин (координаты каждой вершины задаются тремя числами)
     shaderProgram.setAttributeArray(vertexLocation, sphere.vertices.data());
 
+    // Передаём массив векторов нормалей к вершинам vertices. Каждый вектор состоит из трёх чисел
+    shaderProgram.setAttributeArray(normalLocation, sphere.normals.data());
+
+
     shaderProgram.enableAttributeArray(vertexLocation);
     shaderProgram.enableAttributeArray(normalLocation);
 
-    glDrawArrays(GL_TRIANGLES, 0, sphere.sectorCount * (sphere.stackCount - 2) * 3 * 3);
+    glDrawArrays(GL_TRIANGLES, 0, sphere.vertices.size());
 
     shaderProgram.disableAttributeArray(vertexLocation);
 
