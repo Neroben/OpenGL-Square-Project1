@@ -13,17 +13,8 @@ void JSphere::init() {
     buildVerticesSmooth();
 }
 
-void JSphere::clearArrays() {
-    std::vector<QVector3D>().swap(points);
-    std::vector<float>().swap(texCoords);
-    std::vector<unsigned int>().swap(lineIndices);
-}
-
 void JSphere::buildVerticesSmooth() {
     const float PI = acos(-1);
-
-    // clear memory of prev arrays
-    clearArrays();
 
     float x, y, z, xy;                              // vertex position
     float nx, ny, nz, lengthInv = 1.0f / radius;    // normal
@@ -48,10 +39,6 @@ void JSphere::buildVerticesSmooth() {
             y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
             addPoints(x, y, z);
 
-            // vertex tex coord between [0, 1]
-            s = (float) j / sectorCount;
-            t = (float) i / stackCount;
-            addTexCoord(s, t);
         }
     }
 
@@ -89,11 +76,17 @@ void JSphere::addPoints(float x, float y, float z) {
     points.emplace_back(x, y, z);
 }
 
-void JSphere::addTexCoord(float s, float t) {
-    texCoords.push_back(s);
-    texCoords.push_back(t);
+int JSphere::intersects(const JRay &ray, QVector3D *R) const {
+    QVector3D C;
+    int k = 0;
+    for (int i = 0; i < polygons.size(); i++) {
+        // Если луч пересекает хотя бы одну грань, то считаем, что луч пересёк куб
+        // В R записываем координаты точек пересечения с гранями
+        if (polygons[i].intersects(ray, C))
+            R[k++] = C;
+    }
+    return k;
 }
-
 
 //Инициализация переменных для вычисление глубины
 void JSphere::updateDepth(QMatrix4x4 projectMatrix) {

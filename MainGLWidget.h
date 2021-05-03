@@ -87,6 +87,8 @@ private:
     void drawSphere(const JSphere &sphere);
 
     void resetModelViewSphere(JSphere *cube);
+
+    JRay selectionRay(const QPoint &P, JSphere *sphere) const;
 };
 
 #endif //MAINGLWIDGET_H

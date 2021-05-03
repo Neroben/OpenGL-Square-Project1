@@ -23,13 +23,6 @@ public:
     float radius = 1;
     int sectorCount = 25;   //секторов на круге xy
     int stackCount = 25;    //секторов на круге xz
-    std::vector<float> texCoords;
-
-    std::vector<unsigned int> lineIndices;
-
-    // interleaved
-    std::vector<float> interleavedVertices;
-    int interleavedStride;                  // # of bytes to hop to the next vertex (should be 32 bytes)
 
     // Цвет сферы
     QColor color;
@@ -40,8 +33,7 @@ public:
 
     QVector<QVector3D> normals;
 
-    std::vector<QVector3D> points;
-
+    QVector<QVector3D> points;
 
 
     // Флаг, определяющий, выделена ли сфера мышкой
@@ -62,13 +54,11 @@ public:
 
     void addPoints(float x, float y, float z);
 
-    void clearArrays();
-
     void init();
 
     void buildVerticesSmooth();
 
-    void addTexCoord(float s, float t);
+    int intersects(const JRay &ray, QVector3D *R) const;
 };
 
 

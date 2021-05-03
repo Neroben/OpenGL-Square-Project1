@@ -5,7 +5,6 @@
 // Приложение, использующее простейший шейдер для освещения куба
 
 #include "MainGLWidget.h"
-#include <gl/glu.h>
 
 MainGLWidget::~MainGLWidget() {
 
@@ -106,7 +105,7 @@ void MainGLWidget::paintGL() {
     // Устанавливаем параметры освещения
     setLighting();
 
-    for(int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) {
         // Рисование куба
         drawCube(cubes[i]);
     }
@@ -321,6 +320,17 @@ void MainGLWidget::mousePressEvent(QMouseEvent *m_event) {
         }
     }
 
+    //цикл по всем сферам
+
+    // Рассчитаем параметры селектирующего луча
+    JRay selection_ray = selectionRay(mousePosition, &sphere);
+    if (sphere.is_selecting = sphere.intersects(selection_ray, R) > 0) {
+        depthInfo = QString("Глубина точек пересечения луча с кубом %1. Глубина: Z1=%2, Z2=%3.\n").arg(1)
+                .arg(customDepth(R[0], sphere.modelViewMatrix))
+                .arg(customDepth(R[1], sphere.modelViewMatrix));
+    }
+
+
     update();
 }
 
@@ -339,6 +349,18 @@ JRay MainGLWidget::selectionRay(const QPoint &P, JCube *cube) const {
     // Первая точка A должна находится на ближней плоскости отсечения (z = -1), вторая точка B - на дальней плоскости отсечения (z = 1)
     QVector3D A = (cube->IQ * QVector4D(M.x(), M.y(), -1, 1)).toVector3DAffine();
     QVector3D B = (cube->IQ * QVector4D(M.x(), M.y(), 1, 1)).toVector3DAffine();
+    return JRay(A, B);
+}
+
+JRay MainGLWidget::selectionRay(const QPoint &P, JSphere *sphere) const {
+    // Вычислим координаты указателя мыши в экранной системе координат OpenGL
+    QPointF M = toOpenGLScreen(P);
+
+    // Вычислим параметры селектирующего луча
+    // Для этого нужно взять две точки, прямая через которые перпендикулярна экранной плоскости и пересекает её в точке P(x, y)
+    // Первая точка A должна находится на ближней плоскости отсечения (z = -1), вторая точка B - на дальней плоскости отсечения (z = 1)
+    QVector3D A = (sphere->IQ * QVector4D(M.x(), M.y(), -1, 1)).toVector3DAffine();
+    QVector3D B = (sphere->IQ * QVector4D(M.x(), M.y(), 1, 1)).toVector3DAffine();
     return JRay(A, B);
 }
 
