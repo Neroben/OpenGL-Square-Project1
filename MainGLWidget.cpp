@@ -16,6 +16,7 @@ MainGLWidget::MainGLWidget(QWidget *parent) : QOpenGLWidget(parent), shaderProgr
     initCubes();
     sphere = JSphere();
     sphere.init();
+    sphere.center = QVector3D(0.0f, 1.0f, 0.0f);
 }
 
 void MainGLWidget::initCubes() {
@@ -239,7 +240,7 @@ void MainGLWidget::resetModelViewSphere(JSphere *sphere) {
 
     // Вторая операция - перенос объекта на его место
     // Умножим видовую матрицу на матрицу переноса
-//    sphere->modelViewMatrix.translate(sphere->center());
+    sphere->modelViewMatrix.translate(sphere->center);
 
     // Первая операция - масштабирование объекта (уменьшим объект, чтобы он не занимал весь экран)
     sphere->modelViewMatrix.scale(0.3f, 0.3f, 0.3f);
