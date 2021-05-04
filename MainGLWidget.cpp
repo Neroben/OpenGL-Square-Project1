@@ -5,6 +5,7 @@
 // Приложение, использующее простейший шейдер для освещения куба
 
 #include "MainGLWidget.h"
+#include "geometry/JStar.h"
 
 MainGLWidget::~MainGLWidget() {
 
@@ -17,6 +18,9 @@ MainGLWidget::MainGLWidget(QWidget *parent) : QOpenGLWidget(parent), shaderProgr
     sphere = JSphere();
     sphere.init();
     sphere.center = QVector3D(0.0f, 1.0f, 0.0f);
+
+    star.init();
+    star.center = QVector3D(0.0f, 0.0f, 0.0f);
 }
 
 void MainGLWidget::initCubes() {
@@ -113,6 +117,8 @@ void MainGLWidget::paintGL() {
 
     drawSphere(sphere);
 
+    drawStar(star);
+
     shaderProgram.release();
 
     // Вывод на экран текста
@@ -169,7 +175,7 @@ void MainGLWidget::drawCube(const JCube &cube) {
 
 }
 
-// Подпрограмма для рисования куба
+// Подпрограмма для рисования сферы
 void MainGLWidget::drawSphere(const JSphere &sphere) {
 
     // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
@@ -208,6 +214,45 @@ void MainGLWidget::drawSphere(const JSphere &sphere) {
 
 }
 
+// Подпрограмма для рисования звезды
+void MainGLWidget::drawStar(const JStar &star) {
+
+    // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
+    shaderProgram.setUniformValue(matrixLocation, projectMatrix * star.modelViewMatrix);
+
+    // Матрица, используемая для пересчёта векторов нормалей в вершинном шейдере
+    shaderProgram.setUniformValue(normalMatrixLocation, star.modelViewMatrix.normalMatrix());
+
+    // Видовая матрица для вершинного шейдера
+    shaderProgram.setUniformValue(modelViewMatrixLocation, star.modelViewMatrix);
+
+    // Цвет куба
+    QVector3D starColor;
+    if (star.is_selecting)
+        starColor = QVector3D(1.0, 0.5, 0.3);
+    else
+        starColor = QVector3D(0.0, 0.5, 0.9);
+
+    shaderProgram.setUniformValue("objectColor", starColor);
+
+    // Передаём массив вершин (координаты каждой вершины задаются тремя числами)
+    shaderProgram.setAttributeArray(vertexLocation, star.vertices.data());
+
+    // Передаём массив векторов нормалей к вершинам vertices. Каждый вектор состоит из трёх чисел
+    shaderProgram.setAttributeArray(normalLocation, star.normals.data());
+
+
+    shaderProgram.enableAttributeArray(vertexLocation);
+    shaderProgram.enableAttributeArray(normalLocation);
+
+    glDrawArrays(GL_TRIANGLES, 0, star.vertices.size());
+
+    shaderProgram.disableAttributeArray(vertexLocation);
+
+    shaderProgram.disableAttributeArray(normalLocation);
+
+}
+
 void MainGLWidget::resetProjection() {
     // Инициализация единичной матрицы
     projectMatrix.setToIdentity();
@@ -221,6 +266,7 @@ void MainGLWidget::resetModelView() {
         resetModelViewCube(&cubes[i]);
     }
     resetModelViewSphere(&sphere);
+    resetModelViewStar(&star);
 }
 
 // Процедура для изменения видовой матрицы
@@ -273,6 +319,31 @@ void MainGLWidget::resetModelViewCube(JCube *cube) {
     cube->updateDepth(projectMatrix);
 }
 
+// Процедура для изменения видовой матрицы
+void MainGLWidget::resetModelViewStar(JStar *star) {
+    // Инициализация видовой матрицы как единичной
+    star->modelViewMatrix.setToIdentity();
+
+    // Далее аффинные преобразования записаны в обратном порядке
+
+    // Четвертая операция - перенос объекта вдоль оси z (например, вглубь экрана)
+    // Умножим видовую матрицу на матрицу переноса
+    star->modelViewMatrix.translate(0, 0, -zoffset);
+
+    // Третья операция - поворот объекта
+    // Умножим видовую матрицу на матрицу поворота
+    star->modelViewMatrix *= rotateMatrix.transposed();
+
+    // Вторая операция - перенос объекта на его место
+    // Умножим видовую матрицу на матрицу переноса
+    star->modelViewMatrix.translate(star->center);
+
+    // Первая операция - масштабирование объекта (уменьшим объект, чтобы он не занимал весь экран)
+    star->modelViewMatrix.scale(0.3f, 0.3f, 0.3f);
+
+    star->updateDepth(projectMatrix);
+}
+
 
 // Обработчик события перемещения указателя мыши (событие происходит при зажатой кнопке мыши)
 void MainGLWidget::mouseMoveEvent(QMouseEvent *m_event) {
@@ -322,7 +393,6 @@ void MainGLWidget::mousePressEvent(QMouseEvent *m_event) {
     }
 
     //цикл по всем сферам
-
     // Рассчитаем параметры селектирующего луча
     JRay selection_ray = selectionRay(mousePosition, &sphere);
     if (sphere.is_selecting = sphere.intersects(selection_ray, R) > 0) {
@@ -331,6 +401,12 @@ void MainGLWidget::mousePressEvent(QMouseEvent *m_event) {
                 .arg(customDepth(R[1], sphere.modelViewMatrix));
     }
 
+    selection_ray = selectionRay(mousePosition, &star);
+    if (star.is_selecting = star.intersects(selection_ray, R) > 0) {
+        depthInfo = QString("Глубина точек пересечения луча с кубом %1. Глубина: Z1=%2, Z2=%3.\n").arg(1)
+                .arg(customDepth(R[0], star.modelViewMatrix))
+                .arg(customDepth(R[1], star.modelViewMatrix));
+    }
 
     update();
 }
@@ -362,6 +438,18 @@ JRay MainGLWidget::selectionRay(const QPoint &P, JSphere *sphere) const {
     // Первая точка A должна находится на ближней плоскости отсечения (z = -1), вторая точка B - на дальней плоскости отсечения (z = 1)
     QVector3D A = (sphere->IQ * QVector4D(M.x(), M.y(), -1, 1)).toVector3DAffine();
     QVector3D B = (sphere->IQ * QVector4D(M.x(), M.y(), 1, 1)).toVector3DAffine();
+    return JRay(A, B);
+}
+
+JRay MainGLWidget::selectionRay(const QPoint &P, JStar *star) const {
+    // Вычислим координаты указателя мыши в экранной системе координат OpenGL
+    QPointF M = toOpenGLScreen(P);
+
+    // Вычислим параметры селектирующего луча
+    // Для этого нужно взять две точки, прямая через которые перпендикулярна экранной плоскости и пересекает её в точке P(x, y)
+    // Первая точка A должна находится на ближней плоскости отсечения (z = -1), вторая точка B - на дальней плоскости отсечения (z = 1)
+    QVector3D A = (star->IQ * QVector4D(M.x(), M.y(), -1, 1)).toVector3DAffine();
+    QVector3D B = (star->IQ * QVector4D(M.x(), M.y(), 1, 1)).toVector3DAffine();
     return JRay(A, B);
 }
 

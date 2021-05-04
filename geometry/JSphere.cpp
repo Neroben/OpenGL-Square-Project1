@@ -6,7 +6,6 @@
 
 JSphere::JSphere() {
     modelViewMatrix.setToIdentity();
-    modelViewMatrix.translate(0, 0, -10);
 }
 
 void JSphere::init() {

@@ -12,6 +12,7 @@
 #include <QOpenGLWidget>
 #include "geometry/JCube.h"
 #include "geometry/JSphere.h"
+#include "geometry/JStar.h"
 
 class MainGLWidget : public QOpenGLWidget {
 public:
@@ -28,6 +29,8 @@ private:
     JCube cubes[2];
 
     JSphere sphere;
+
+    JStar star;
 
     // Матрица поворота
     QMatrix4x4 rotateMatrix; // Изначально матрица поворота равна единичной матрице
@@ -89,6 +92,12 @@ private:
     void resetModelViewSphere(JSphere *cube);
 
     JRay selectionRay(const QPoint &P, JSphere *sphere) const;
+
+    void drawStar(const JStar &star);
+
+    void resetModelViewStar(JStar *star);
+
+    JRay selectionRay(const QPoint &P, JStar *star) const;
 };
 
 #endif //MAINGLWIDGET_H
