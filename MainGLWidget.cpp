@@ -63,7 +63,6 @@ void MainGLWidget::initializeGL() {
     QTimer *rotateTimer = new QTimer();
     connect(rotateTimer, SIGNAL(timeout()), this, SLOT(rotateColorsTrigger()));
     rotateTimer->start(30);
-    rotateTimer->deleteLater();
     irotate = 0;
 }
 
