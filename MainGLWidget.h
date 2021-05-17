@@ -2,8 +2,8 @@
 // Created by sdont on 05.03.2021.
 //
 
-#ifndef OPENGL_OPENGLWIDGET_H
-#define OPENGL_OPENGLWIDGET_H
+#ifndef OPENGL_MAINGLWIDGET_H
+#define OPENGL_MAINGLWIDGET_H
 
 #include <QOpenGLFunctions>
 #include <QPainter>
@@ -11,12 +11,12 @@
 #include <QOpenGLShaderProgram>
 #include <QtOpenGLWidgets/QOpenGLWidget>
 
-class OpenGLWidget : public QOpenGLWidget {
+class MainGLWidget : public QOpenGLWidget {
 public:
-    explicit OpenGLWidget(QWidget *parent) : QOpenGLWidget(parent) {
+    explicit MainGLWidget(QWidget *parent) : QOpenGLWidget(parent) {
         shaderProgram = new QOpenGLShaderProgram();
     }
-    ~OpenGLWidget() {
+    ~MainGLWidget() {
         delete shaderProgram;
     }
 
@@ -62,4 +62,4 @@ private:
 };
 
 
-#endif //OPENGL_OPENGLWIDGET_H
+#endif //OPENGL_MAINGLWIDGET_H

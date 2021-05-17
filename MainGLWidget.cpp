@@ -5,9 +5,9 @@
 
 
 
-#include "OpenGLWidget.h"
+#include "MainGLWidget.h"
 
-void OpenGLWidget::initializeGL() {
+void MainGLWidget::initializeGL() {
     glEnable(GL_DEPTH_TEST);
 
     // Фоновый цвет
@@ -42,7 +42,7 @@ void OpenGLWidget::initializeGL() {
     resetModelView();
 }
 
-void OpenGLWidget::resizeGL(int nWidth, int nHeight)
+void MainGLWidget::resizeGL(int nWidth, int nHeight)
 {
     // Задание области вывода
     glViewport(0, 0, nWidth, nHeight);
@@ -51,7 +51,7 @@ void OpenGLWidget::resizeGL(int nWidth, int nHeight)
 }
 
 // Внутри данной подпрограммы происходит рисование объектов
-void OpenGLWidget::paintGL()
+void MainGLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -87,7 +87,7 @@ void OpenGLWidget::paintGL()
 }
 
 
-void OpenGLWidget::textOut()
+void MainGLWidget::textOut()
 {
     // Вывод на экран текста
     QPainter painter(this);
@@ -102,7 +102,7 @@ void OpenGLWidget::textOut()
 }
 
 
-void OpenGLWidget::resetProjection()
+void MainGLWidget::resetProjection()
 {
     // Инициализация единичной матрицы
     projectMatrix.setToIdentity();
@@ -114,7 +114,7 @@ void OpenGLWidget::resetProjection()
 
 
 // Процедура для изменения видовой матрицы
-void OpenGLWidget::resetModelView()
+void MainGLWidget::resetModelView()
 {
     // Инициализация видовой матрицы как единичной
     modelViewMatrix.setToIdentity();
@@ -135,7 +135,7 @@ void OpenGLWidget::resetModelView()
 
 
 // Обработчик события перемещения указателя мыши (событие происходит при зажатой кнопке мыши)
-void OpenGLWidget::mouseMoveEvent(QMouseEvent* m_event)
+void MainGLWidget::mouseMoveEvent(QMouseEvent* m_event)
 {
 //    // Вычислим, на сколько переместился курсор мыши между двумя событиями mouseMoveEvent
     QPoint dp = m_event->pos() - mousePosition;
@@ -151,7 +151,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* m_event)
 
 // Процедура предназначена для изменения матрицы поворота, чтобы квадрат поворачивался в нужном направлении строго вслед за указателем мыши.
 // Вызывается, когда пользователь изменил положение указателя мыши при зажатой кнопке (мыши)
-void OpenGLWidget::changeRotateMatrix(QMatrix4x4& R, float dx, float dy)
+void MainGLWidget::changeRotateMatrix(QMatrix4x4& R, float dx, float dy)
 {
     R.rotate(-dx, 0, 1, 0);         // Умножение R на матрицу поворота вокруг оси y
     R.rotate(-dy, 1, 0, 0);         // Умножение R на матрицу поворота вокруг оси x
@@ -159,7 +159,7 @@ void OpenGLWidget::changeRotateMatrix(QMatrix4x4& R, float dx, float dy)
 
 
 // Обработчик события прокрутки колеса мыши
-void OpenGLWidget::wheelEvent(QWheelEvent* w_event)
+void MainGLWidget::wheelEvent(QWheelEvent* w_event)
 {
     // При прокрутке колеса мыши изменяем глубину объекта
     zoffset -= (float)(w_event->angleDelta().x() + w_event->angleDelta().y()) / 500.0f;
@@ -168,13 +168,13 @@ void OpenGLWidget::wheelEvent(QWheelEvent* w_event)
 }
 
 
-void OpenGLWidget::mousePressEvent(QMouseEvent* m_event)
+void MainGLWidget::mousePressEvent(QMouseEvent* m_event)
 {
     mousePosition = m_event->pos();
 }
 
 
-void OpenGLWidget::keyPressEvent(QKeyEvent *event)
+void MainGLWidget::keyPressEvent(QKeyEvent *event)
 {
 //     Закрыть окно при нажатии клавиши Escape
     if (event->key() == Qt::Key_Escape)
